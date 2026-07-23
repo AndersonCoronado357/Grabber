@@ -1,0 +1,332 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  Id              String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  Email           String    @unique @db.NVarChar(320)
+  Username        String    @unique @db.NVarChar(32)
+  PasswordHash    String?   @db.NVarChar(255)
+  DisplayName     String?   @db.NVarChar(80)
+  Bio             String?   @db.NVarChar(280)
+  AvatarPath      String?   @db.NVarChar(400)
+  EmailVerifiedAt DateTime? @db.DateTime2
+  Plan            String    @default("free") @db.NVarChar(20)
+  // Suscripción de pago (Wompi). PlanUntil null = sin vencimiento (Free).
+  PlanUntil            DateTime? @db.DateTime2
+  AutoRenew            Boolean   @default(false)
+  WompiPaymentSourceId String?   @db.NVarChar(50)
+  RenewalReminderAt    DateTime? @db.DateTime2
+  DeletedAt       DateTime? @db.DateTime2
+  CreatedAt       DateTime  @default(now()) @db.DateTime2
+  UpdatedAt       DateTime  @default(now()) @updatedAt @db.DateTime2
+
+  Preferences     UserPreferences?
+  Sessions        Session[]
+  ResetTokens     PasswordResetToken[]
+  EmailCodes      EmailVerificationCode[]
+  TwoFactor       TwoFactorSecret?
+  DownloadJobs    DownloadJob[]
+  LibraryItems    LibraryItem[]
+  Collections     Collection[]
+  UsageCounters   UsageCounter[]
+  Notifications   Notification[]
+  PushSubscriptions PushSubscription[]
+  Payments        Payment[]
+
+  @@map("Users")
+}
+
+model Payment {
+  Id                 String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId             String   @db.UniqueIdentifier
+  Plan               String   @db.NVarChar(20)
+  AmountCents        Int
+  Currency           String   @default("COP") @db.NVarChar(3)
+  // PENDING | APPROVED | DECLINED | VOIDED | ERROR
+  Status             String   @default("PENDING") @db.NVarChar(20)
+  Method             String?  @db.NVarChar(40)
+  // Referencia única que se envía a Wompi (gr_<hex>_<plan>_<ts>)
+  Reference          String   @unique @db.NVarChar(120)
+  WompiTransactionId String?  @db.NVarChar(60)
+  CreatedAt          DateTime @default(now()) @db.DateTime2
+  UpdatedAt          DateTime @default(now()) @updatedAt @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId, CreatedAt(sort: Desc)])
+  @@map("Payments")
+}
+
+model PushSubscription {
+  Id        String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId    String   @db.UniqueIdentifier
+  Endpoint  String   @unique @db.NVarChar(500)
+  P256dh    String   @db.NVarChar(200)
+  Auth      String   @db.NVarChar(100)
+  UserAgent String?  @db.NVarChar(300)
+  CreatedAt DateTime @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId])
+  @@map("PushSubscriptions")
+}
+
+model UserPreferences {
+  UserId               String  @id @db.UniqueIdentifier
+  Theme                String  @default("system") @db.NVarChar(10)
+  Locale               String  @default("Español") @db.NVarChar(40)
+  Timezone             String  @default("GMT-6 Ciudad de Mexico") @db.NVarChar(60)
+  DefaultQuality       String  @default("1080p") @db.NVarChar(20)
+  DefaultFormat        String  @default("MP4") @db.NVarChar(10)
+  FilenameTemplate     String  @default("{titulo}-{calidad}") @db.NVarChar(200)
+  ConcurrentDownloads  Int     @default(2) @db.TinyInt
+  AutoPurgeTrash       Boolean @default(true)
+  NotificationSettings String  @default("{}") @db.NVarChar(Max)
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@map("UserPreferences")
+}
+
+model Session {
+  Id               String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId           String    @db.UniqueIdentifier
+  RefreshTokenHash String    @db.NVarChar(255)
+  PriorTokenHash   String?   @db.NVarChar(255)
+  UserAgent        String?   @db.NVarChar(400)
+  IpAddress        String?   @db.NVarChar(45)
+  DeviceLabel      String?   @db.NVarChar(120)
+  LastSeenAt       DateTime  @default(now()) @db.DateTime2
+  ExpiresAt        DateTime  @db.DateTime2
+  RevokedAt        DateTime? @db.DateTime2
+  CreatedAt        DateTime  @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId, RevokedAt])
+  @@index([RefreshTokenHash])
+  @@map("Sessions")
+}
+
+model PasswordResetToken {
+  Id         String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId     String    @db.UniqueIdentifier
+  TokenHash  String    @db.NVarChar(255)
+  ExpiresAt  DateTime  @db.DateTime2
+  ConsumedAt DateTime? @db.DateTime2
+  Attempts   Int       @default(0) @db.TinyInt
+  CreatedAt  DateTime  @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId])
+  @@map("PasswordResetTokens")
+}
+
+model EmailVerificationCode {
+  Id         String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId     String    @db.UniqueIdentifier
+  CodeHash   String    @db.NVarChar(255)
+  ExpiresAt  DateTime  @db.DateTime2
+  ConsumedAt DateTime? @db.DateTime2
+  Attempts   Int       @default(0) @db.TinyInt
+  CreatedAt  DateTime  @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId])
+  @@map("EmailVerificationCodes")
+}
+
+model TwoFactorSecret {
+  UserId            String    @id @db.UniqueIdentifier
+  SecretEncrypted   Bytes     @db.VarBinary(512)
+  EnabledAt         DateTime? @db.DateTime2
+  RecoveryCodesHash String?   @db.NVarChar(Max)
+  CreatedAt         DateTime  @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@map("TwoFactorSecrets")
+}
+
+model MediaSource {
+  Id               String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  Platform         String    @db.NVarChar(20)
+  SourceId         String    @db.NVarChar(120)
+  SourceUrl        String    @db.NVarChar(1000)
+  Title            String    @db.NVarChar(500)
+  Author           String?   @db.NVarChar(200)
+  DurationSeconds  Int?
+  ThumbnailUrl     String?   @db.NVarChar(1000)
+  PublishedAt      DateTime? @db.DateTime2
+  ViewCount        BigInt?
+  AvailableFormats String    @default("[]") @db.NVarChar(Max)
+  RawMetadata      String?   @db.NVarChar(Max)
+  FetchedAt        DateTime  @default(now()) @db.DateTime2
+  CreatedAt        DateTime  @default(now()) @db.DateTime2
+
+  DownloadJobs DownloadJob[]
+  LibraryItems LibraryItem[]
+
+  @@unique([Platform, SourceId])
+  @@map("MediaSources")
+}
+
+model DownloadJob {
+  Id                 String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId             String?   @db.UniqueIdentifier
+  GuestFingerprint   String?   @db.NVarChar(64)
+  MediaSourceId      String    @db.UniqueIdentifier
+  Status             String    @default("queued") @db.NVarChar(20)
+  Quality            String    @db.NVarChar(20)
+  Format             String    @db.NVarChar(10)
+  IncludeSubtitles   Boolean   @default(false)
+  IncludeThumbnail   Boolean   @default(true)
+  TargetCollectionId String?   @db.UniqueIdentifier
+  ProgressPercent    Decimal   @default(0) @db.Decimal(5, 2)
+  DownloadedBytes    BigInt    @default(0)
+  TotalBytes         BigInt?
+  SpeedBytesPerSec   BigInt?
+  EtaSeconds         Int?
+  Attempts           Int       @default(0) @db.TinyInt
+  ErrorCode          String?   @db.NVarChar(40)
+  ErrorMessage       String?   @db.NVarChar(500)
+  StartedAt          DateTime? @db.DateTime2
+  CompletedAt        DateTime? @db.DateTime2
+  CreatedAt          DateTime  @default(now()) @db.DateTime2
+  UpdatedAt          DateTime  @default(now()) @updatedAt @db.DateTime2
+
+  User        User?         @relation(fields: [UserId], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  MediaSource MediaSource   @relation(fields: [MediaSourceId], references: [Id])
+  // 1:1 real garantizado por índice único filtrado (SQL Server trata los
+  // NULL como duplicados en UNIQUE, así que el filtro va en la migración)
+  LibraryItems LibraryItem[]
+
+  @@index([UserId, Status, CreatedAt(sort: Desc)])
+  @@index([Status, CreatedAt])
+  @@map("DownloadJobs")
+}
+
+model LibraryItem {
+  Id            String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId        String    @db.UniqueIdentifier
+  DownloadJobId String?   @db.UniqueIdentifier
+  MediaSourceId String    @db.UniqueIdentifier
+  Title         String    @db.NVarChar(500)
+  Notes         String?   @db.NVarChar(Max)
+  FilePath      String    @db.NVarChar(600)
+  FileSizeBytes BigInt    @default(0)
+  Format        String    @db.NVarChar(10)
+  Quality       String    @db.NVarChar(20)
+  IsFavorite    Boolean   @default(false)
+  FileMissing   Boolean   @default(false)
+  DeletedAt     DateTime? @db.DateTime2
+  CreatedAt     DateTime  @default(now()) @db.DateTime2
+  UpdatedAt     DateTime  @default(now()) @updatedAt @db.DateTime2
+
+  User            User             @relation(fields: [UserId], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  DownloadJob     DownloadJob?     @relation(fields: [DownloadJobId], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+  MediaSource     MediaSource      @relation(fields: [MediaSourceId], references: [Id])
+  CollectionItems CollectionItem[]
+  Tags            LibraryItemTag[]
+
+  @@index([UserId, DeletedAt, CreatedAt(sort: Desc)])
+  @@index([UserId, IsFavorite])
+  @@map("LibraryItems")
+}
+
+model Collection {
+  Id        String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId    String   @db.UniqueIdentifier
+  Name      String   @db.NVarChar(80)
+  ColorTag  String   @default("#8A6D6D") @db.NVarChar(20)
+  CreatedAt DateTime @default(now()) @db.DateTime2
+  UpdatedAt DateTime @default(now()) @updatedAt @db.DateTime2
+
+  User  User             @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+  Items CollectionItem[]
+
+  @@unique([UserId, Name])
+  @@map("Collections")
+}
+
+model CollectionItem {
+  CollectionId  String   @db.UniqueIdentifier
+  LibraryItemId String   @db.UniqueIdentifier
+  AddedAt       DateTime @default(now()) @db.DateTime2
+
+  Collection  Collection  @relation(fields: [CollectionId], references: [Id], onDelete: Cascade)
+  LibraryItem LibraryItem @relation(fields: [LibraryItemId], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([CollectionId, LibraryItemId])
+  @@map("CollectionItems")
+}
+
+model Tag {
+  Id        String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId    String   @db.UniqueIdentifier
+  Name      String   @db.NVarChar(40)
+  CreatedAt DateTime @default(now()) @db.DateTime2
+
+  Items LibraryItemTag[]
+
+  @@unique([UserId, Name])
+  @@map("Tags")
+}
+
+model LibraryItemTag {
+  LibraryItemId String @db.UniqueIdentifier
+  TagId         String @db.UniqueIdentifier
+
+  LibraryItem LibraryItem @relation(fields: [LibraryItemId], references: [Id], onDelete: Cascade)
+  Tag         Tag         @relation(fields: [TagId], references: [Id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([LibraryItemId, TagId])
+  @@map("LibraryItemTags")
+}
+
+model UsageCounter {
+  Id            String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId        String   @db.UniqueIdentifier
+  PeriodStart   DateTime @db.Date
+  DownloadsUsed Int      @default(0)
+  CreatedAt     DateTime @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@unique([UserId, PeriodStart])
+  @@map("UsageCounters")
+}
+
+model GuestUsage {
+  Id            String   @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  Fingerprint   String   @db.NVarChar(64)
+  DownloadsUsed Int      @default(0)
+  PeriodStart   DateTime @db.Date
+  CreatedAt     DateTime @default(now()) @db.DateTime2
+
+  @@unique([Fingerprint, PeriodStart])
+  @@map("GuestUsage")
+}
+
+model Notification {
+  Id        String    @id @default(dbgenerated("newsequentialid()")) @db.UniqueIdentifier
+  UserId    String    @db.UniqueIdentifier
+  Type      String    @db.NVarChar(40)
+  Payload   String    @default("{}") @db.NVarChar(Max)
+  ReadAt    DateTime? @db.DateTime2
+  CreatedAt DateTime  @default(now()) @db.DateTime2
+
+  User User @relation(fields: [UserId], references: [Id], onDelete: Cascade)
+
+  @@index([UserId, ReadAt, CreatedAt(sort: Desc)])
+  @@map("Notifications")
+}
