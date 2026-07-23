@@ -1,0 +1,52 @@
+{
+  "name": "grabber-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "db:setup": "sqlcmd -S localhost -E -C -i scripts/setup-db.sql",
+    "prisma:migrate": "tsx scripts/with-db-url.ts --admin -- prisma migrate dev",
+    "prisma:deploy": "tsx scripts/with-db-url.ts --admin -- prisma migrate deploy",
+    "prisma:deploy:test": "tsx scripts/with-db-url.ts --admin --test -- prisma migrate deploy",
+    "prisma:studio": "tsx scripts/with-db-url.ts -- prisma studio",
+    "prisma:generate": "prisma generate",
+    "seed": "tsx src/db/seed.ts",
+    "icons": "tsx scripts/build-icons.ts",
+    "app:build": "tsx scripts/build-app.ts",
+    "test": "tsx scripts/with-db-url.ts --test -- vitest run"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^10.0.1",
+    "@fastify/cors": "^10.0.1",
+    "@fastify/helmet": "^12.0.1",
+    "@fastify/multipart": "^9.0.1",
+    "@fastify/rate-limit": "^10.1.1",
+    "@fastify/static": "^8.0.2",
+    "@prisma/client": "^5.22.0",
+    "argon2": "^0.41.1",
+    "dotenv": "^16.4.5",
+    "fastify": "^5.1.0",
+    "jose": "^5.9.6",
+    "otpauth": "^9.3.4",
+    "pino": "^9.5.0",
+    "sharp": "^0.33.5",
+    "web-push": "^3.6.7",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@types/web-push": "^3.6.4",
+    "pino-pretty": "^13.0.0",
+    "png-to-ico": "^2.1.8",
+    "prisma": "^5.22.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  }
+}

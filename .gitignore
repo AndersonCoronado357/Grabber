@@ -1,0 +1,45 @@
+# Dependencias
+node_modules/
+
+# Build, salidas generadas y caché
+dist/
+build/
+.next/
+.angular/
+.output/
+coverage/
+.turbo/
+*.tsbuildinfo
+
+# Frontend generado por `npm run app:build` (se reconstruye desde
+# Grabber.dc.html + app-src/component.js, también en el Dockerfile)
+public/app/index.html
+public/app/support.js
+
+# Entorno y secretos (nunca subir claves reales)
+.env
+*.env
+.env.*
+!.env.example
+
+# Certificados / claves
+*.pem
+*.key
+*.crt
+certs/
+
+# Editor y herramientas
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Documentación y despliegue: viven en la máquina, fuera del repo de código
+*.md
+Dockerfile
+.dockerignore
