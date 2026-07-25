@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root, [data-theme="dark"]{
+  --canvas:#0A0A0A;--chrome:#0F0F0F;--surface:#161616;--surface-raised:#1E1E1E;--surface-pressed:#262626;
+  --text:#F2F0ED;--text-muted:#8A8A8A;--text-faint:#5A5A5A;
+  --accent:#FA05A0;--accent-hover:#FF3DB8;--accent-pressed:#C4047C;--accent-soft:#2A0A1E;
+  --success:#4ADE80;--warning:#E8A33D;--skel:#1c1c1c;
+}
+[data-theme="light"]{
+  --canvas:#F5F4F2;--chrome:#EFEDEA;--surface:#FFFFFF;--surface-raised:#FAF9F7;--surface-pressed:#E8E5E1;
+  --text:#0F0F0F;--text-muted:#6E6E6E;--text-faint:#A0A0A0;
+  --accent:#FA05A0;--accent-hover:#FF3DB8;--accent-pressed:#C4047C;--accent-soft:#FFE8F5;
+  --success:#22A85A;--warning:#B87415;--skel:#ECEAE7;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--canvas);}
+input,button,textarea,select{font:inherit;color:inherit;background:none;border:none;outline:none;}
+button{cursor:pointer;}
+::selection{background:var(--accent);color:#0F0F0F;}
+a{color:var(--accent);text-decoration:none;}
+a:hover{color:var(--accent-hover);}
+input::placeholder,textarea::placeholder{color:var(--text-faint);}
+.gr-hide-scroll::-webkit-scrollbar{display:none;}
+.gr-hide-scroll{scrollbar-width:none;}
+*{scrollbar-width:none;-ms-overflow-style:none;}
+*::-webkit-scrollbar{width:0;height:0;display:none;}
+@keyframes gr-fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+@keyframes gr-in{from{opacity:0;}to{opacity:1;}}
+@keyframes gr-sheet{from{transform:translateY(100%);}to{transform:none;}}
+@keyframes gr-slide{from{transform:translateX(100%);}to{transform:none;}}
+@keyframes gr-bar{from{width:0;}}
+@keyframes gr-spin{to{transform:rotate(360deg);}}
+@keyframes gr-load{0%{width:14%;}50%{width:88%;}100%{width:14%;}}
+@keyframes gr-float{0%{transform:translateY(0);}50%{transform:translateY(-14px);}100%{transform:translateY(0);}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:var(--canvas);color:var(--text);font-family:'Hanken Grotesk',system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;">
+
+<!-- ============ LOGGED OUT ============ -->
+<sc-if value="{{ notAuthed }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;">
+
+    <!-- LOGIN -->
+    <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+      <div style="display:grid;grid-template-columns:1fr;min-height:100dvh;" data-screen-label="Login">
+        <div class="gr-auth" style="display:grid;min-height:100dvh;">
+          <!-- form column -->
+          <div class="gr-authcol" style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:48px 24px;background:var(--canvas);order:1;">
+            <div style="width:100%;max-width:380px;animation:gr-fade .5s ease both;">
+              <div onClick="{{ nav.home }}" style="display:flex;align-items:center;gap:9px;margin-bottom:40px;cursor:pointer;">
+                <div style="width:22px;height:22px;border-radius:6px;background:var(--accent);"></div>
+                <span style="font-size:19px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+              </div>
+              <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;">Inicia sesión</h1>
+              <p style="font-size:14px;color:var(--text-muted);margin:0 0 28px;">Entra a tu biblioteca.</p>
+
+              <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Email</label>
+              <input value="{{ f.email }}" onInput="{{ setEmail }}" type="email" placeholder="tu@correo.com" style="width:100%;background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14px;margin-bottom:16px;" />
+
+              <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;">
+                <label style="font-size:12px;color:var(--text-muted);">Contraseña</label>
+                <span onClick="{{ nav.forgot }}" style="font-size:12px;color:var(--text-muted);cursor:pointer;">¿Olvidaste?</span>
+              </div>
+              <div style="display:flex;align-items:center;background:var(--surface);border-radius:10px;padding:0 6px 0 14px;margin-bottom:16px;">
+                <input value="{{ f.pass }}" onInput="{{ setPass }}" type="{{ passType }}" placeholder="••••••••" style="flex:1;padding:13px 0;font-size:14px;" />
+                <button onClick="{{ togglePass }}" aria-label="Mostrar contraseña" style="padding:8px;border-radius:8px;color:var(--text-muted);display:flex;">{{ eyeIcon }}</button>
+              </div>
+
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text-muted);margin-bottom:22px;cursor:pointer;">
+                <span onClick="{{ toggleRemember }}" style="width:18px;height:18px;border-radius:6px;background:{{ rememberBg }};display:inline-flex;align-items:center;justify-content:center;color:#0F0F0F;">{{ rememberCheck }}</span>
+                Recordarme
+              </label>
+
+              <button onClick="{{ doLogin }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:14px;border-radius:10px;transition:background .18s;" style-hover="background:var(--accent-hover);">Entrar</button>
+
+              <div style="display:flex;align-items:center;gap:14px;margin:22px 0;">
+                <div style="flex:1;height:1px;background:var(--surface-pressed);"></div>
+                <span style="font-size:12px;color:var(--text-faint);">o</span>
+                <div style="flex:1;height:1px;background:var(--surface-pressed);"></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <button onClick="{{ doLogin }}" style="width:100%;background:var(--surface-raised);color:var(--text);font-size:14px;font-weight:500;padding:13px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:10px;transition:background .18s;" style-hover="background:var(--surface-pressed);"><span style="font-weight:600;">G</span> Continuar con Google</button>
+              </div>
+              <p style="font-size:13px;color:var(--text-muted);margin:26px 0 0;text-align:center;">¿No tienes cuenta? <span onClick="{{ nav.signup }}" style="color:var(--text);cursor:pointer;font-weight:500;">Crear cuenta</span></p>
+            </div>
+          </div>
+
+          <!-- decorated panel -->
+          <div class="gr-auth-panel" style="position:relative;background:var(--surface);overflow:hidden;order:2;display:flex;flex-direction:column;justify-content:space-between;padding:56px;min-height:100vh;">
+            <!-- decorative background layer -->
+            <div style="position:absolute;top:-80px;right:-90px;width:340px;height:340px;border-radius:40px;background:var(--surface-raised);transform:rotate(18deg);"></div>
+            <div style="position:absolute;top:120px;right:60px;width:120px;height:120px;border-radius:24px;background:var(--accent-soft);animation:gr-float 7s ease-in-out infinite;"></div>
+            <div style="position:absolute;bottom:-60px;left:-70px;width:260px;height:260px;border-radius:36px;background:var(--surface-raised);transform:rotate(-12deg);"></div>
+            <div style="position:absolute;top:44%;left:-30px;width:60px;height:6px;border-radius:6px;background:var(--accent);"></div>
+            <div style="position:absolute;bottom:180px;right:40px;font-size:200px;font-weight:700;letter-spacing:-0.06em;color:var(--surface-raised);line-height:1;user-select:none;">↓</div>
+
+            <div style="position:relative;display:flex;align-items:center;gap:10px;animation:gr-fade .5s ease both;">
+              <div style="width:26px;height:26px;border-radius:7px;background:var(--accent);"></div>
+              <span style="font-size:20px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+            </div>
+
+            <div style="position:relative;animation:gr-fade .6s ease both;">
+              <div style="font-size:clamp(48px,6vw,92px);font-weight:600;letter-spacing:-0.03em;line-height:0.95;color:var(--text);">Guarda<br/>lo que<br/>importa.</div>
+              <p style="font-size:16px;color:var(--text-muted);max-width:380px;margin:24px 0 28px;">Descarga y archiva video de seis plataformas. Sin ruido, sin límites de tu memoria.</p>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;max-width:380px;">
+                <sc-for list="{{ platformStrip }}" as="p" hint-placeholder-count="6">
+                  <span style="font-size:12px;font-weight:500;color:var(--text-muted);background:var(--surface-raised);padding:7px 13px;border-radius:999px;">{{ p.label }}</span>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- decorative flat queue -->
+            <div style="position:relative;display:flex;flex-direction:column;gap:10px;max-width:460px;">
+              <sc-for list="{{ decoRows }}" as="row" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:14px;background:var(--surface-raised);border-radius:12px;padding:13px 15px;animation:gr-fade .5s ease both;">
+                  <div style="width:56px;height:34px;border-radius:7px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:10px;font-weight:600;">{{ row.code }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="height:9px;width:{{ row.w1 }};background:var(--surface-pressed);border-radius:3px;margin-bottom:8px;"></div>
+                    <div style="height:3px;width:100%;background:var(--surface-pressed);border-radius:3px;position:relative;overflow:hidden;">
+                      <div style="position:absolute;inset:0 auto 0 0;width:{{ row.pct }};background:{{ row.barColor }};border-radius:3px;{{ row.anim }}"></div>
+                    </div>
+                  </div>
+                  <span style="font-size:11px;color:var(--text-faint);">{{ row.pctLabel }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- SIGNUP -->
+    <sc-if value="{{ isSignup }}" hint-placeholder-val="{{ true }}">
+      <div class="gr-auth" style="display:grid;min-height:100dvh;" data-screen-label="Signup">
+        <div class="gr-authcol" style="display:flex;flex-direction:column;justify-content:center;align-items:center;padding:48px 24px;order:1;">
+          <div style="width:100%;max-width:380px;animation:gr-fade .5s ease both;">
+            <div onClick="{{ nav.home }}" style="display:flex;align-items:center;gap:9px;margin-bottom:36px;cursor:pointer;">
+              <div style="width:22px;height:22px;border-radius:6px;background:var(--accent);"></div>
+              <span style="font-size:19px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+            </div>
+            <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;">Crear cuenta</h1>
+            <p style="font-size:14px;color:var(--text-muted);margin:0 0 26px;">Tres descargas de invitado, o crea tu biblioteca ahora.</p>
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Nombre</label>
+            <input value="{{ f.name }}" onInput="{{ setName }}" placeholder="Tu nombre" style="width:100%;background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14px;margin-bottom:14px;" />
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Email</label>
+            <input value="{{ f.email }}" onInput="{{ setEmail }}" type="email" placeholder="tu@correo.com" style="width:100%;background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14px;margin-bottom:14px;" />
+            <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Contraseña</label>
+            <div style="display:flex;align-items:center;background:var(--surface);border-radius:10px;padding:0 6px 0 14px;margin-bottom:10px;">
+              <input value="{{ f.pass }}" onInput="{{ setPass }}" type="{{ passType }}" placeholder="Mínimo 8 caracteres" style="flex:1;padding:13px 0;font-size:14px;" />
+              <button onClick="{{ togglePass }}" aria-label="Mostrar contraseña" style="padding:8px;border-radius:8px;color:var(--text-muted);display:flex;">{{ eyeIcon }}</button>
+            </div>
+            <div style="display:flex;gap:5px;margin-bottom:8px;">
+              <div style="flex:1;height:2px;border-radius:2px;background:{{ pw.s1 }};"></div>
+              <div style="flex:1;height:2px;border-radius:2px;background:{{ pw.s2 }};"></div>
+              <div style="flex:1;height:2px;border-radius:2px;background:{{ pw.s3 }};"></div>
+              <div style="flex:1;height:2px;border-radius:2px;background:{{ pw.s4 }};"></div>
+            </div>
+            <p style="font-size:12px;color:var(--text-muted);margin:0 0 20px;">Fuerza: {{ pw.label }}</p>
+            <label style="display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--text-muted);margin-bottom:22px;cursor:pointer;line-height:1.4;">
+              <span onClick="{{ toggleTerms }}" style="width:18px;height:18px;border-radius:6px;background:{{ termsBg }};display:inline-flex;align-items:center;justify-content:center;color:#0F0F0F;flex-shrink:0;margin-top:1px;">{{ termsCheck }}</span>
+              Acepto los términos de servicio y la política de privacidad.
+            </label>
+            <button onClick="{{ doSignup }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:14px;border-radius:10px;transition:background .18s;" style-hover="background:var(--accent-hover);">Crear cuenta</button>
+            <p style="font-size:13px;color:var(--text-muted);margin:24px 0 0;text-align:center;">¿Ya tienes cuenta? <span onClick="{{ nav.login }}" style="color:var(--text);cursor:pointer;font-weight:500;">Inicia sesión</span></p>
+          </div>
+        </div>
+        <div class="gr-auth-panel" style="background:var(--surface);order:2;display:flex;flex-direction:column;justify-content:center;padding:56px;">
+          <div style="font-size:clamp(40px,5vw,72px);font-weight:600;letter-spacing:-0.03em;line-height:0.98;">Tu archivo,<br/>ordenado.</div>
+          <p style="font-size:16px;color:var(--text-muted);max-width:340px;margin:22px 0 0;">Colecciones, etiquetas, notas y detalle completo de cada descarga.</p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- VERIFY -->
+    <sc-if value="{{ isVerify }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:24px;" data-screen-label="Verify">
+        <div style="width:100%;max-width:380px;text-align:center;animation:gr-fade .5s ease both;">
+          <div style="display:inline-flex;align-items:center;gap:9px;margin-bottom:32px;">
+            <div style="width:22px;height:22px;border-radius:6px;background:var(--accent);"></div>
+            <span style="font-size:19px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+          </div>
+          <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;">Verifica tu email</h1>
+          <p style="font-size:14px;color:var(--text-muted);margin:0 0 28px;">Enviamos un código de 6 dígitos a tu correo.</p>
+          <div style="display:flex;gap:8px;justify-content:center;margin-bottom:24px;">
+            <sc-for list="{{ codeCells }}" as="c" hint-placeholder-count="6">
+              <div style="width:48px;height:56px;border-radius:10px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;">{{ c.v }}</div>
+            </sc-for>
+          </div>
+          <button onClick="{{ doVerify }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:14px;border-radius:10px;">Verificar</button>
+          <p style="font-size:13px;color:var(--text-muted);margin:22px 0 0;">Reenviar código en <span style="color:var(--text);">{{ resendIn }}s</span></p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- FORGOT -->
+    <sc-if value="{{ isForgot }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:24px;" data-screen-label="Forgot">
+        <div style="width:100%;max-width:380px;animation:gr-fade .5s ease both;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
+            <div style="width:22px;height:22px;border-radius:6px;background:var(--accent);"></div>
+            <span style="font-size:19px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+          </div>
+          <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;">Recuperar acceso</h1>
+          <p style="font-size:14px;color:var(--text-muted);margin:0 0 26px;">Te enviaremos un enlace para restablecer tu contraseña.</p>
+          <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Email</label>
+          <input value="{{ f.email }}" onInput="{{ setEmail }}" type="email" placeholder="tu@correo.com" style="width:100%;background:var(--surface);border-radius:10px;padding:13px 14px;font-size:14px;margin-bottom:20px;" />
+          <button onClick="{{ nav.reset }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:14px;border-radius:10px;">Enviar enlace</button>
+          <p style="font-size:13px;color:var(--text-muted);margin:22px 0 0;text-align:center;"><span onClick="{{ nav.login }}" style="color:var(--text);cursor:pointer;font-weight:500;">Volver a iniciar sesión</span></p>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- RESET -->
+    <sc-if value="{{ isReset }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:100vh;padding:24px;" data-screen-label="Reset">
+        <div style="width:100%;max-width:380px;animation:gr-fade .5s ease both;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
+            <div style="width:22px;height:22px;border-radius:6px;background:var(--accent);"></div>
+            <span style="font-size:19px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+          </div>
+          <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;">Nueva contraseña</h1>
+          <p style="font-size:14px;color:var(--text-muted);margin:0 0 24px;">Elige una contraseña segura.</p>
+          <div style="display:flex;align-items:center;background:var(--surface);border-radius:10px;padding:0 6px 0 14px;margin-bottom:18px;">
+            <input value="{{ f.pass }}" onInput="{{ setPass }}" type="{{ passType }}" placeholder="Nueva contraseña" style="flex:1;padding:13px 0;font-size:14px;" />
+            <button onClick="{{ togglePass }}" aria-label="Mostrar contraseña" style="padding:8px;border-radius:8px;color:var(--text-muted);display:flex;">{{ eyeIcon }}</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:22px;">
+            <sc-for list="{{ pwReqs }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:9px;font-size:13px;color:{{ r.color }};">
+                <span style="display:flex;">{{ r.icon }}</span>{{ r.label }}
+              </div>
+            </sc-for>
+          </div>
+          <button onClick="{{ nav.login }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:14px;border-radius:10px;">Guardar y entrar</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- PUBLIC HOME placeholder -->
+    <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Home">
+        <!-- public top bar -->
+        <div style="position:sticky;top:0;z-index:40;background:var(--chrome);">
+          <div class="gr-bar" style="max-width:1720px;margin:0 auto;height:56px;display:flex;align-items:center;padding:0 40px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:20px;height:20px;border-radius:6px;background:var(--accent);"></div>
+              <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+            </div>
+            <div style="flex:1;"></div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <button onClick="{{ cycleTheme }}" aria-label="Cambiar tema" style="width:34px;height:34px;border-radius:10px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;" style-hover="background:var(--surface);">{{ themeIcon }}</button>
+              <button onClick="{{ nav.login }}" style="font-size:14px;font-weight:500;color:var(--text);">Iniciar sesión</button>
+              <button onClick="{{ nav.signup }}" style="font-size:14px;font-weight:600;color:#0F0F0F;background:var(--accent);padding:9px 16px;border-radius:10px;">Crear cuenta</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- hero -->
+        <section style="background:var(--canvas);">
+          <div style="max-width:820px;margin:0 auto;padding:80px 24px 72px;text-align:center;">
+            <h1 style="font-size:clamp(38px,6vw,64px);font-weight:600;letter-spacing:-0.03em;line-height:1.02;margin:0 0 18px;">Descarga video.<br/>Archívalo bien.</h1>
+            <p style="font-size:17px;color:var(--text-muted);margin:0 auto 36px;max-width:520px;">Una herramienta silenciosa para bajar y guardar video de seis plataformas. Pruébala sin cuenta.</p>
+            <div style="display:flex;align-items:center;background:var(--surface);border-radius:16px;padding:8px 8px 8px 20px;max-width:640px;margin:0 auto;">
+              <span style="color:var(--text-muted);display:flex;margin-right:12px;">{{ iconLink }}</span>
+              <input value="{{ homeUrl }}" onInput="{{ setHomeUrl }}" placeholder="Pega un enlace…" style="flex:1;font-size:16px;padding:13px 0;min-width:0;" />
+              <button onClick="{{ analyzeHome }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:15px;padding:13px 26px;border-radius:11px;flex-shrink:0;transition:background .18s;" style-hover="background:var(--accent-hover);">Analizar</button>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px;">
+              <sc-for list="{{ platformStripH }}" as="p" hint-placeholder-count="6">
+                <span style="font-size:13px;font-weight:500;color:{{ p.color }};opacity:{{ p.opacity }};transition:opacity .18s,color .18s;">{{ p.label }}</span>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ homeAnalyzing }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface);border-radius:14px;padding:20px;margin:32px auto 0;max-width:640px;display:flex;gap:18px;text-align:left;">
+                <div style="width:200px;height:112px;border-radius:10px;background:var(--skel);flex-shrink:0;"></div>
+                <div style="flex:1;padding-top:6px;"><div style="height:15px;width:80%;background:var(--skel);border-radius:4px;margin-bottom:12px;"></div><div style="height:15px;width:50%;background:var(--skel);border-radius:4px;"></div></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ homeResult }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface);border-radius:14px;padding:20px;margin:32px auto 0;max-width:640px;text-align:left;animation:gr-fade .3s ease both;">
+                <div style="display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+                  <div style="position:relative;width:200px;height:112px;border-radius:10px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:12px;font-weight:600;">{{ homeResult.platform }}<span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ homeResult.duration }}</span></div>
+                  <div style="flex:1;min-width:180px;"><h3 style="font-size:16px;font-weight:600;line-height:1.35;margin:0 0 6px;">{{ homeResult.title }}</h3><div style="font-size:13px;color:var(--text-muted);">{{ homeResult.author }} · {{ homeResult.views }} vistas</div></div>
+                </div>
+                <sc-if value="{{ guestWall }}" hint-placeholder-val="{{ false }}">
+                  <div style="background:var(--surface-raised);border-radius:12px;padding:18px;margin-top:18px;text-align:center;">
+                    <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Crea una cuenta para seguir descargando y guardar tu biblioteca.</div>
+                    <button onClick="{{ nav.signup }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:11px 22px;border-radius:10px;">Crear cuenta gratis</button>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ homeCanDownload }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;gap:12px;flex-wrap:wrap;">
+                    <span style="font-size:12px;color:var(--text-muted);">{{ guestLabel }}</span>
+                    <button onClick="{{ homeDownload }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:11px 22px;border-radius:10px;">Descargar 1080p</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </section>
+
+        <!-- how it works -->
+        <section style="background:var(--chrome);">
+          <div style="max-width:1000px;margin:0 auto;padding:72px 24px;">
+            <h2 style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 32px;">Cómo funciona</h2>
+            <div class="gr-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+              <sc-for list="{{ homeSteps }}" as="st" hint-placeholder-count="3">
+                <div style="background:var(--surface);border-radius:14px;padding:28px 24px;">
+                  <div style="font-size:13px;font-weight:600;color:var(--accent);margin-bottom:14px;">{{ st.n }}</div>
+                  <div style="font-size:18px;font-weight:600;letter-spacing:-0.02em;margin-bottom:8px;">{{ st.title }}</div>
+                  <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">{{ st.desc }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <!-- formats -->
+        <section style="background:var(--canvas);">
+          <div style="max-width:1000px;margin:0 auto;padding:72px 24px;">
+            <h2 style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 32px;">Formatos</h2>
+            <div class="gr-6col" style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px;">
+              <sc-for list="{{ homeFormats }}" as="fmt" hint-placeholder-count="6">
+                <div style="background:var(--surface);border-radius:12px;padding:20px 16px;text-align:center;">
+                  <div style="font-size:18px;font-weight:600;letter-spacing:-0.02em;">{{ fmt.q }}</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">{{ fmt.d }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <!-- pricing -->
+        <section style="background:var(--chrome);">
+          <div style="max-width:1000px;margin:0 auto;padding:72px 24px;">
+            <h2 style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 32px;">Planes</h2>
+            <div class="gr-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+              <sc-for list="{{ plansH }}" as="pl" hint-placeholder-count="3">
+                <div style="background:{{ pl.bg }};border-radius:16px;padding:28px 24px;display:flex;flex-direction:column;gap:18px;">
+                  <div><div style="font-size:15px;font-weight:600;">{{ pl.name }}</div><div style="font-size:36px;font-weight:600;letter-spacing:-0.03em;margin-top:8px;">{{ pl.price }}<span style="font-size:14px;color:var(--text-muted);font-weight:400;">/mes</span></div></div>
+                  <div style="display:flex;flex-direction:column;gap:10px;flex:1;">
+                    <sc-for list="{{ pl.feats }}" as="ft" hint-placeholder-count="4"><div style="font-size:14px;color:var(--text-muted);">{{ ft }}</div></sc-for>
+                  </div>
+                  <button onClick="{{ nav.signup }}" style="width:100%;font-size:14px;font-weight:600;padding:12px;border-radius:11px;background:{{ pl.ctaBg }};color:{{ pl.ctaFg }};">{{ pl.cta }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <!-- FAQ -->
+        <section style="background:var(--canvas);">
+          <div style="max-width:760px;margin:0 auto;padding:72px 24px;">
+            <h2 style="font-size:13px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin:0 0 24px;">Preguntas</h2>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ faqs }}" as="fq" hint-placeholder-count="4">
+                <div style="background:var(--surface);border-radius:14px;overflow:hidden;">
+                  <button onClick="{{ fq.onClick }}" style="width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;text-align:left;font-size:15px;font-weight:500;color:var(--text);">{{ fq.q }}<span style="color:var(--text-muted);display:flex;flex-shrink:0;">{{ fq.chevron }}</span></button>
+                  <sc-if value="{{ fq.open }}" hint-placeholder-val="{{ false }}"><div style="padding:0 20px 20px;font-size:14px;color:var(--text-muted);line-height:1.6;">{{ fq.a }}</div></sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </section>
+
+        <!-- footer -->
+        <footer style="background:var(--chrome);">
+          <div class="gr-homefoot" style="max-width:1000px;margin:0 auto;padding:48px 24px;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:18px;height:18px;border-radius:5px;background:var(--accent);"></div><span style="font-size:15px;font-weight:600;letter-spacing:-0.02em;">grabber</span></div>
+            <div style="display:flex;gap:24px;font-size:13px;color:var(--text-muted);flex-wrap:wrap;">
+              <span style="cursor:pointer;">Términos</span><span style="cursor:pointer;">Privacidad</span><span style="cursor:pointer;">Estado</span><span style="cursor:pointer;">Contacto</span>
+            </div>
+            <span style="font-size:12px;color:var(--text-faint);">© 2026 Grabber</span>
+          </div>
+        </footer>
+      </div>
+    </sc-if>
+
+  </div>
+</sc-if>
+
+<!-- ============ LOGGED IN ============ -->
+<sc-if value="{{ authed }}" hint-placeholder-val="{{ false }}">
+  <div>
+    <!-- TOP BAR -->
+    <div class="gr-topbar" style="position:sticky;top:0;z-index:40;background:var(--chrome);">
+      <div class="gr-bar" style="max-width:1720px;margin:0 auto;height:56px;display:flex;align-items:center;gap:24px;padding:0 40px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+          <div style="width:20px;height:20px;border-radius:6px;background:var(--accent);"></div>
+          <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em;">grabber</span>
+        </div>
+        <nav style="display:flex;align-items:stretch;gap:2px;height:56px;" class="gr-desktop-nav">
+          <sc-for list="{{ topTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="position:relative;display:flex;align-items:center;gap:6px;padding:0 12px;font-size:14px;font-weight:500;color:{{ t.color }};background:none;">
+              {{ t.label }}
+              <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--text-faint);background:var(--surface);border-radius:999px;padding:1px 7px;">{{ t.badge }}</span></sc-if>
+              <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:12px;right:12px;bottom:0;height:2px;background:var(--accent);border-radius:2px;"></span></sc-if>
+            </button>
+          </sc-for>
+        </nav>
+        <div style="flex:1;"></div>
+        <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+          <div onClick="{{ focusSearch }}" class="gr-search" style="display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:10px;padding:0 10px;height:34px;width:{{ searchWidth }};transition:width .2s ease;overflow:hidden;cursor:text;">
+            <span style="color:var(--text-muted);display:flex;flex-shrink:0;">{{ iconSearch }}</span>
+            <input value="{{ q.global }}" onInput="{{ setGlobalSearch }}" onFocus="{{ expandSearch }}" onBlur="{{ collapseSearch }}" placeholder="Buscar" class="gr-search-x" style="flex:1;font-size:13px;min-width:0;" />
+            <span class="gr-search-x" style="font-size:11px;color:var(--text-faint);flex-shrink:0;">⌘K</span>
+          </div>
+          <button onClick="{{ toggleNotif }}" aria-label="Notificaciones" style="position:relative;width:34px;height:34px;border-radius:10px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:background .18s;" style-hover="background:var(--surface);">{{ iconBell }}<span style="position:absolute;top:8px;right:8px;width:6px;height:6px;border-radius:999px;background:var(--accent);"></span></button>
+          <button onClick="{{ cycleTheme }}" aria-label="Cambiar tema" style="width:34px;height:34px;border-radius:10px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:background .18s;" style-hover="background:var(--surface);">{{ themeIcon }}</button>
+          <button onClick="{{ toggleAvatar }}" aria-label="Cuenta" style="width:28px;height:28px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-left:4px;">{{ user.initials }}</button>
+        </div>
+      </div>
+      <!-- mobile primary tabs -->
+      <div class="gr-mobile-nav gr-hide-scroll" style="display:none;overflow-x:auto;background:var(--chrome);">
+        <div style="display:flex;gap:2px;padding:0 16px;">
+          <sc-for list="{{ topTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.onClick }}" style="position:relative;display:flex;align-items:center;gap:6px;padding:12px 12px;font-size:14px;font-weight:500;color:{{ t.color }};white-space:nowrap;">
+              {{ t.label }}
+              <sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:var(--text-faint);">{{ t.badge }}</span></sc-if>
+              <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:12px;right:12px;bottom:0;height:2px;background:var(--accent);border-radius:2px;"></span></sc-if>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+
+    <!-- avatar popover -->
+    <sc-if value="{{ avatarOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeOverlays }}" style="position:fixed;inset:0;z-index:45;"></div>
+      <div class="gr-pop" style="position:fixed;top:60px;right:calc((100vw - min(1720px,100vw))/2 + 40px);z-index:46;width:264px;background:var(--surface-raised);border-radius:14px;padding:8px;animation:gr-fade .16s ease both;">
+        <div style="padding:12px 12px 14px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <div style="width:36px;height:36px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;">{{ user.initials }}</div>
+            <div style="min-width:0;">
+              <div style="font-size:14px;font-weight:600;">{{ user.name }}</div>
+              <div style="font-size:12px;color:var(--text-muted);">Plan {{ user.plan }}</div>
+            </div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between;margin-bottom:6px;"><span>Uso</span><span>{{ user.usageLabel }}</span></div>
+          <div style="height:2px;background:var(--surface-pressed);border-radius:2px;overflow:hidden;"><div style="height:100%;width:{{ user.usagePct }};background:var(--accent);"></div></div>
+        </div>
+        <div style="height:1px;background:var(--surface-pressed);margin:0 4px 6px;"></div>
+        <button onClick="{{ goSettingsProfile }}" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .16s;" style-hover="background:var(--surface-pressed);">{{ iconUser }} Perfil</button>
+        <button onClick="{{ goSettings }}" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .16s;" style-hover="background:var(--surface-pressed);">{{ iconGear }} Ajustes</button>
+        <div style="padding:8px 12px;">
+          <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">Tema</div>
+          <div style="display:flex;background:var(--surface);border-radius:9px;padding:3px;">
+            <sc-for list="{{ themeSeg }}" as="s" hint-placeholder-count="3">
+              <button onClick="{{ s.onClick }}" style="flex:1;font-size:12px;font-weight:500;padding:7px 0;border-radius:7px;color:{{ s.color }};background:{{ s.bg }};transition:background .16s;">{{ s.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <button style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .16s;" style-hover="background:var(--surface-pressed);">{{ iconHelp }} Ayuda</button>
+        <button onClick="{{ doLogout }}" style="width:100%;text-align:left;padding:10px 12px;border-radius:8px;font-size:14px;color:var(--text);display:flex;align-items:center;gap:10px;transition:background .16s;" style-hover="background:var(--surface-pressed);">{{ iconLogout }} Cerrar sesión</button>
+      </div>
+    </sc-if>
+
+    <!-- notifications popover -->
+    <sc-if value="{{ notifOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeOverlays }}" style="position:fixed;inset:0;z-index:45;"></div>
+      <div class="gr-pop" style="position:fixed;top:60px;right:calc((100vw - min(1720px,100vw))/2 + 76px);z-index:46;width:320px;background:var(--surface-raised);border-radius:14px;padding:8px;animation:gr-fade .16s ease both;">
+        <div style="padding:12px 12px 10px;font-size:13px;font-weight:600;">Notificaciones</div>
+        <sc-for list="{{ notifItems }}" as="n" hint-placeholder-count="3">
+          <div style="display:flex;gap:11px;padding:11px 12px;border-radius:10px;" style-hover="background:var(--surface-pressed);">
+            <span style="width:7px;height:7px;border-radius:999px;background:{{ n.dot }};margin-top:6px;flex-shrink:0;"></span>
+            <div style="min-width:0;"><div style="font-size:13px;font-weight:500;line-height:1.4;">{{ n.title }}</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ n.time }}</div></div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- MAIN -->
+    <main class="gr-main" style="max-width:1720px;margin:0 auto;padding:36px 40px 100px;min-height:calc(100vh - 56px);">
+
+      <!-- DOWNLOAD -->
+      <sc-if value="{{ isDownload }}" hint-placeholder-val="{{ true }}">
+        <div data-screen-label="Descargar" data-comment-anchor="download">
+          <!-- hero input -->
+          <div style="width:100%;max-width:640px;margin:0 auto 8px;text-align:center;">
+            <div style="display:flex;justify-content:center;align-items:center;gap:12px;margin-bottom:10px;">
+              <h1 style="font-size:32px;font-weight:600;letter-spacing:-0.02em;margin:0;">Descargar</h1>
+              <label style="display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text-muted);cursor:pointer;background:var(--surface);padding:8px 12px;border-radius:999px;">
+                <span onClick="{{ toggleBatch }}" style="width:34px;height:19px;border-radius:999px;background:{{ batchTrackBg }};position:relative;transition:background .18s;flex-shrink:0;"><span style="position:absolute;top:2px;left:{{ batchThumbX }};width:15px;height:15px;border-radius:999px;background:{{ batchThumbBg }};transition:left .18s;"></span></span>
+                Modo lote
+              </label>
+            </div>
+            <p style="font-size:15px;color:var(--text-muted);margin:0 auto 26px;max-width:520px;">Pega un enlace de YouTube, Instagram, TikTok, X, Facebook o Reddit y elige cómo guardarlo.</p>
+
+            <sc-if value="{{ batchMode }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface);border-radius:16px;padding:10px;text-align:left;">
+                <textarea value="{{ url }}" onInput="{{ setUrl }}" placeholder="Un enlace por línea…" style="width:100%;min-height:140px;resize:vertical;background:none;padding:14px 16px;font-size:15px;line-height:1.7;"></textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px 8px;">
+                  <span style="font-size:13px;color:var(--text-muted);">{{ batchCount }} enlaces</span>
+                  <button onClick="{{ analyze }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:11px 22px;border-radius:11px;">Analizar</button>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ singleMode }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;background:var(--surface);border-radius:16px;padding:9px 9px 9px 22px;">
+                <span style="color:var(--text-muted);display:flex;margin-right:14px;">{{ iconLink }}</span>
+                <input value="{{ url }}" onInput="{{ setUrl }}" placeholder="https://…" style="flex:1;font-size:17px;padding:15px 0;min-width:0;" />
+                <button onClick="{{ analyze }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:15px;padding:15px 30px;border-radius:12px;flex-shrink:0;transition:background .18s;" style-hover="background:var(--accent-hover);">Analizar</button>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:18px;align-items:center;">
+              <sc-if value="{{ showClip }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ pasteClip }}" style="display:inline-flex;align-items:center;gap:8px;background:var(--surface);border-radius:999px;padding:7px 14px;font-size:13px;color:var(--text-muted);cursor:pointer;transition:background .16s;" style-hover="background:var(--surface-raised);">{{ iconClip }} Pegar del portapapeles</div>
+              </sc-if>
+              <sc-for list="{{ platformStrip }}" as="p" hint-placeholder-count="6">
+                <div style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;background:var(--surface);color:{{ p.color }};opacity:{{ p.opacity }};transition:opacity .18s,color .18s;">{{ p.label }}</div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ dlError }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size:13px;color:var(--warning);margin:14px 0 0;">{{ dlError }}</p>
+            </sc-if>
+          </div>
+
+          <!-- skeleton -->
+          <sc-if value="{{ analyzing }}" hint-placeholder-val="{{ false }}">
+            <div class="gr-dl-grid" style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:36px;">
+              <div style="background:var(--surface);border-radius:16px;padding:16px;"><div style="width:100%;aspect-ratio:16/9;border-radius:12px;background:var(--skel);margin-bottom:16px;"></div><div style="height:18px;width:80%;background:var(--skel);border-radius:5px;margin-bottom:12px;"></div><div style="height:14px;width:50%;background:var(--skel);border-radius:5px;"></div></div>
+              <div style="background:var(--surface);border-radius:16px;padding:20px;"><div style="height:14px;width:40%;background:var(--skel);border-radius:5px;margin-bottom:16px;"></div><div style="height:52px;width:100%;background:var(--skel);border-radius:10px;margin-bottom:10px;"></div><div style="height:52px;width:100%;background:var(--skel);border-radius:10px;"></div></div>
+            </div>
+          </sc-if>
+
+          <!-- result: two columns -->
+          <sc-if value="{{ result }}" hint-placeholder-val="{{ false }}">
+            <div class="gr-dl-grid" style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:36px;animation:gr-fade .3s ease both;">
+              <!-- preview -->
+              <div style="background:var(--surface);border-radius:16px;padding:16px;">
+                <div style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;background:var(--surface-pressed);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:15px;font-weight:600;overflow:hidden;margin-bottom:18px;">
+                  {{ result.platformLabel }}
+                  <span style="position:absolute;bottom:12px;right:12px;background:#0A0A0A;color:#F2F0ED;font-size:12px;font-weight:600;padding:3px 8px;border-radius:6px;">{{ result.duration }}</span>
+                </div>
+                <h3 style="font-size:20px;font-weight:600;letter-spacing:-0.02em;margin:0 0 10px;line-height:1.3;padding:0 4px;">{{ result.title }}</h3>
+                <div style="display:flex;gap:20px;flex-wrap:wrap;padding:0 4px 4px;">
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:2px;">Autor</div><div style="font-size:14px;font-weight:500;">{{ result.author }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:2px;">Vistas</div><div style="font-size:14px;font-weight:500;">{{ result.views }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:2px;">Publicado</div><div style="font-size:14px;font-weight:500;">{{ result.date }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:2px;">Plataforma</div><div style="font-size:14px;font-weight:500;">{{ result.platform }}</div></div>
+                </div>
+              </div>
+              <!-- options -->
+              <div style="background:var(--surface);border-radius:16px;padding:20px;display:flex;flex-direction:column;">
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Calidad de video</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+                  <sc-for list="{{ qualityVideo }}" as="opt" hint-placeholder-count="5">
+                    <button onClick="{{ opt.onSelect }}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:11px;background:{{ opt.bg }};color:{{ opt.fg }};transition:background .16s;">
+                      <span style="font-size:14px;font-weight:600;">{{ opt.label }}</span>
+                      <span style="font-size:11px;opacity:.7;">{{ opt.size }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Solo audio</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">
+                  <sc-for list="{{ qualityAudio }}" as="opt" hint-placeholder-count="2">
+                    <button onClick="{{ opt.onSelect }}" style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:11px;background:{{ opt.bg }};color:{{ opt.fg }};transition:background .16s;">
+                      <span style="font-size:14px;font-weight:600;">{{ opt.label }}</span>
+                      <span style="font-size:11px;opacity:.7;">{{ opt.size }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);margin-bottom:18px;"></div>
+                <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:22px;">
+                  <sc-for list="{{ dlChecks }}" as="c" hint-placeholder-count="3">
+                    <label onClick="{{ c.onToggle }}" style="display:flex;align-items:center;gap:11px;font-size:14px;color:var(--text);cursor:pointer;">
+                      <span style="width:20px;height:20px;border-radius:6px;background:{{ c.bg }};display:inline-flex;align-items:center;justify-content:center;color:#0F0F0F;flex-shrink:0;">{{ c.check }}</span>{{ c.label }}
+                    </label>
+                  </sc-for>
+                </div>
+                <div style="flex:1;"></div>
+                <sc-if value="{{ dlActive }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;gap:12px;">
+                      <span style="font-size:14px;font-weight:600;">{{ dlActiveStatus }}</span>
+                      <span style="font-size:12px;color:var(--text-muted);white-space:nowrap;">{{ dlActiveInfo }}</span>
+                    </div>
+                    <div style="height:9px;border-radius:999px;background:var(--surface-pressed);overflow:hidden;">
+                      <div style="height:100%;width:{{ dlActivePct }};background:var(--accent);border-radius:999px;transition:width .4s ease;"></div>
+                    </div>
+                  </div>
+                  <button onClick="{{ cancelActiveDl }}" style="width:100%;font-size:14px;font-weight:500;color:var(--text-muted);padding:13px;border-radius:12px;background:var(--surface-raised);transition:color .16s,background .16s;" style-hover="color:var(--warning);background:var(--surface-pressed);">Cancelar</button>
+                </sc-if>
+                <sc-if value="{{ dlIdle }}" hint-placeholder-val="{{ true }}">
+                  <sc-if value="{{ dlJustDone }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--accent-soft);color:var(--accent);border-radius:12px;padding:11px 14px;font-size:14px;font-weight:600;margin-bottom:10px;"><span>✓ Guardada en tu PC</span><span onClick="{{ saveJustDoneToPC }}" style="cursor:pointer;font-size:12px;text-decoration:underline;">Volver a bajar</span></div>
+                  </sc-if>
+                  <sc-if value="{{ dlFailed }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-radius:12px;padding:11px 14px;font-size:13px;background:var(--surface-raised);color:var(--warning);margin-bottom:10px;">{{ dlFailedMsg }}</div>
+                  </sc-if>
+                  <button onClick="{{ downloadResult }}" style="width:100%;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:15px;padding:15px;border-radius:12px;transition:background .18s;margin-bottom:10px;" style-hover="background:var(--accent-hover);">Descargar</button>
+                  <button onClick="{{ queueResult }}" style="width:100%;font-size:14px;font-weight:500;color:var(--text-muted);padding:8px;transition:color .16s;" style-hover="color:var(--text);">Añadir a la cola</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- idle content -->
+          <sc-if value="{{ dlIdle }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:48px;">
+              <div class="gr-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px;">
+                <sc-for list="{{ dlSteps }}" as="st" hint-placeholder-count="3">
+                  <div style="background:var(--surface);border-radius:16px;padding:26px 24px;">
+                    <div style="width:38px;height:38px;border-radius:10px;background:var(--surface-raised);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:16px;">{{ st.icon }}</div>
+                    <div style="font-size:16px;font-weight:600;letter-spacing:-0.02em;margin-bottom:6px;">{{ st.title }}</div>
+                    <div style="font-size:14px;color:var(--text-muted);line-height:1.5;">{{ st.desc }}</div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;">
+                <h2 style="font-size:16px;font-weight:600;letter-spacing:-0.02em;margin:0;">Descargas recientes</h2>
+                <button onClick="{{ nav.library }}" style="font-size:13px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text);">Ver biblioteca</button>
+              </div>
+              <div class="gr-lib-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+                <sc-for list="{{ dlRecent }}" as="v" hint-placeholder-count="4">
+                  <div onClick="{{ nav.library }}" class="gr-card" style="background:var(--surface);border-radius:14px;padding:10px;cursor:pointer;transition:background .16s;" style-hover="background:var(--surface-raised);">
+                    <div style="position:relative;aspect-ratio:16/9;border-radius:10px;background:var(--surface-pressed);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:12px;font-weight:600;">{{ v.plat }}<span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ v.duration }}</span></div>
+                    <div style="padding:12px 6px 6px;">
+                      <div style="font-size:14px;font-weight:500;line-height:1.35;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ v.title }}</div>
+                      <div style="font-size:12px;color:var(--text-muted);">{{ v.meta }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- QUEUE -->
+      <sc-if value="{{ isQueue }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:960px;margin:0 auto;" data-screen-label="Cola">
+          <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap;gap:14px;">
+            <div>
+              <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 4px;">Cola</h1>
+              <p style="font-size:14px;color:var(--text-muted);margin:0;">{{ activeCount }} activas · {{ doneCount }} completadas</p>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <button onClick="{{ toggleColaFilters }}" class="gr-lib-filtbtn" style="display:none;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--text);background:var(--surface);">Opciones <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button>
+              <button onClick="{{ pauseAll }}" class="gr-cola-ctrl" style="font-size:13px;font-weight:500;color:var(--text-muted);padding:9px 14px;border-radius:10px;background:var(--surface);transition:background .16s;" style-hover="background:var(--surface-raised);">Pausar todo</button>
+              <button onClick="{{ clearDone }}" class="gr-cola-ctrl" style="font-size:13px;font-weight:500;color:var(--text-muted);padding:9px 14px;border-radius:10px;background:var(--surface);transition:background .16s;" style-hover="background:var(--surface-raised);">Limpiar completados</button>
+              <div data-dd class="gr-cola-ctrl" style="position:relative;display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--text-muted);">
+                Simultáneas
+                <button onClick="{{ dd.conc.toggle }}" style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--text);">{{ dd.conc.label }} <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button>
+                <sc-if value="{{ dd.conc.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:44px;right:0;z-index:50;min-width:110px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.conc.options }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if>
+              </div>
+            </div>
+          </div>
+
+          <!-- FILTROS DE COLA: mismo panel deslizante que Biblioteca (solo móvil) -->
+          <sc-if value="{{ colaFiltersOpen }}" hint-placeholder-val="{{ false }}">
+            <div class="gr-lib-sheet {{ colaSheetCloseClass }}">
+              <div onClick="{{ toggleColaFilters }}" class="gr-lib-sheet-ov" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);animation:gr-fade .18s ease both;"></div>
+              <div class="gr-lib-sheet-panel" style="position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface-raised);border-radius:22px 22px 0 0;padding:0 18px calc(18px + env(safe-area-inset-bottom));max-height:62vh;overflow-y:auto;overscroll-behavior:contain;">
+                <div style="position:sticky;top:0;z-index:3;background:var(--surface-raised);margin:0 -18px 6px;padding:12px 18px 10px;border-radius:22px 22px 0 0;">
+                  <div style="width:40px;height:4px;border-radius:999px;background:var(--surface-pressed);margin:0 auto 10px;"></div>
+                  <span style="font-size:17px;font-weight:600;">Opciones de la cola</span>
+                </div>
+                <button onClick="{{ pauseAll }}" style="width:100%;text-align:left;font-size:14px;font-weight:500;color:var(--text);padding:14px 0;border-top:1px solid var(--surface-pressed);">Pausar todo</button>
+                <button onClick="{{ clearDone }}" style="width:100%;text-align:left;font-size:14px;font-weight:500;color:var(--text);padding:14px 0;border-top:1px solid var(--surface-pressed);">Limpiar completados</button>
+                <div style="padding:14px 0;border-top:1px solid var(--surface-pressed);">
+                  <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">Descargas simultáneas</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <sc-for list="{{ colaConcOptions }}" as="o" hint-placeholder-count="4">
+                      <button onClick="{{ o.onClick }}" style="font-size:13px;font-weight:600;padding:9px 18px;border-radius:999px;color:{{ o.pillColor }};background:{{ o.pillBg }};transition:background .14s;">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <button onClick="{{ toggleColaFilters }}" style="width:100%;margin-top:18px;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:15px;padding:14px;border-radius:13px;">Listo</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasActive }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ activeRows }}" as="q" hint-placeholder-count="3">
+                <div class="gr-queue-row" style="position:relative;background:var(--surface);border-radius:12px;padding:14px 16px 16px;display:flex;align-items:center;gap:14px;overflow:hidden;">
+                  <div style="width:64px;height:40px;border-radius:7px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text-faint);">{{ q.platform }}</div>
+                  <div style="flex:1;min-width:0;">
+                    <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ q.title }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">{{ q.platform }} · {{ q.format }} · {{ q.statusLabel }}</div>
+                  </div>
+                  <div class="gr-queue-side" style="display:flex;align-items:center;gap:18px;flex-shrink:0;">
+                    <div class="gr-queue-prog" style="text-align:right;font-size:12px;color:var(--text-muted);min-width:120px;">
+                      <span style="color:var(--text);font-weight:600;">{{ q.pctLabel }}</span> · {{ q.speed }} · {{ q.eta }}
+                    </div>
+                    <div style="display:flex;gap:4px;">
+                      <button onClick="{{ q.onToggle }}" aria-label="Pausar/Reanudar" style="width:32px;height:32px;border-radius:8px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:background .16s;" style-hover="background:var(--surface-raised);">{{ q.toggleIcon }}</button>
+                      <button onClick="{{ q.onCancel }}" aria-label="Cancelar" style="width:32px;height:32px;border-radius:8px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;transition:background .16s;" style-hover="background:var(--surface-raised);">{{ iconX }}</button>
+                    </div>
+                  </div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--surface-pressed);"><div style="height:100%;width:{{ q.pctLabel }};background:{{ q.barColor }};transition:width .3s;"></div></div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ queueEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:80px 20px;">
+              <div style="color:var(--text-faint);display:inline-flex;margin-bottom:16px;">{{ iconInboxLg }}</div>
+              <h3 style="font-size:18px;font-weight:600;margin:0 0 6px;">La cola está vacía</h3>
+              <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px;">Analiza un enlace y añádelo aquí.</p>
+              <button onClick="{{ nav.download }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:12px 22px;border-radius:10px;">Ir a Descargar</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ hasDone }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:28px;">
+              <button onClick="{{ toggleDoneGroup }}" style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">{{ doneChevron }} Completados · {{ doneCount }}</button>
+              <sc-if value="{{ doneExpanded }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                  <sc-for list="{{ doneRows }}" as="q" hint-placeholder-count="2">
+                    <div style="background:var(--surface);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;opacity:.55;">
+                      <div style="width:64px;height:40px;border-radius:7px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text-faint);">{{ q.platform }}</div>
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ q.title }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">{{ q.platform }} · {{ q.format }} · {{ q.size }}</div>
+                      </div>
+                      <span style="color:var(--success);display:flex;flex-shrink:0;">{{ iconCheck }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- LIBRARY placeholder -->
+      <sc-if value="{{ isLibrary }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Biblioteca">
+          <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 16px;">Biblioteca</h1>
+          <!-- secondary tabs -->
+          <div style="display:flex;gap:2px;margin-bottom:20px;">
+            <sc-for list="{{ libTabs }}" as="t" hint-placeholder-count="4">
+              <button onClick="{{ t.onClick }}" style="position:relative;padding:8px 12px;font-size:13px;font-weight:500;color:{{ t.color }};">
+                {{ t.label }}
+                <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:12px;right:12px;bottom:-2px;height:2px;background:var(--accent);border-radius:2px;"></span></sc-if>
+              </button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ libShowToolbar }}" hint-placeholder-val="{{ true }}">
+            <div class="gr-lib-tb {{ libFiltClass }}" style="display:flex;align-items:center;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+              <div class="gr-lib-search" style="display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:10px;padding:0 12px;height:38px;flex:1;min-width:180px;max-width:320px;">
+                <span style="color:var(--text-muted);display:flex;">{{ iconSearch }}</span>
+                <input value="{{ libSearch }}" onInput="{{ setLibSearch }}" placeholder="Buscar en la biblioteca" style="flex:1;font-size:13px;min-width:0;" />
+              </div>
+              <button onClick="{{ toggleLibFilters }}" class="gr-lib-filtbtn" style="display:none;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:10px;font-size:13px;font-weight:600;color:var(--text);background:var(--surface);">Filtros <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button>
+              <div class="gr-lib-chips" style="display:contents;">
+              <sc-for list="{{ filterChips }}" as="fc" hint-placeholder-count="4">
+                <div style="position:relative;">
+                  <button onClick="{{ fc.onClick }}" style="display:flex;align-items:center;gap:6px;height:38px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:500;color:{{ fc.color }};background:{{ fc.bg }};">{{ fc.label }} {{ iconChevDown }}</button>
+                  <sc-if value="{{ fc.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;top:44px;left:0;z-index:30;min-width:160px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;">
+                      <sc-for list="{{ fc.options }}" as="o" hint-placeholder-count="4">
+                        <button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:8px 10px;border-radius:8px;font-size:13px;color:{{ o.sel }};background:{{ o.selBg }};" style-hover="background:var(--surface-pressed);">{{ o.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+              </div>
+              <div class="gr-lib-sp" style="flex:1;"></div>
+              <div data-dd class="gr-lib-sort" style="position:relative;display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:10px;padding:0 12px;height:38px;font-size:13px;color:var(--text-muted);">
+                Ordenar
+                <button onClick="{{ dd.sort.toggle }}" style="display:flex;align-items:center;gap:6px;font-weight:600;color:var(--text);">{{ dd.sort.label }} <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button>
+                <sc-if value="{{ dd.sort.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:42px;right:0;z-index:50;min-width:140px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.sort.options }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if>
+              </div>
+              <div class="gr-lib-view" style="display:flex;background:var(--surface);border-radius:10px;height:38px;padding:4px;">
+                <button onClick="{{ setGridView }}" aria-label="Cuadrícula" style="width:34px;border-radius:7px;color:{{ gridColor }};background:{{ gridBg }};display:flex;align-items:center;justify-content:center;">{{ iconGrid }}</button>
+                <button onClick="{{ setListView }}" aria-label="Lista" style="width:34px;border-radius:7px;color:{{ listColor }};background:{{ listBg }};display:flex;align-items:center;justify-content:center;">{{ iconList }}</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- FILTROS: panel deslizante (solo móvil) -->
+          <sc-if value="{{ filtersOpen }}" hint-placeholder-val="{{ false }}">
+            <div class="gr-lib-sheet {{ sheetCloseClass }}">
+              <div onClick="{{ toggleLibFilters }}" class="gr-lib-sheet-ov" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);animation:gr-fade .18s ease both;"></div>
+              <div class="gr-lib-sheet-panel" style="position:fixed;left:0;right:0;bottom:0;z-index:61;background:var(--surface-raised);border-radius:22px 22px 0 0;padding:0 18px calc(18px + env(safe-area-inset-bottom));max-height:62vh;overflow-y:auto;overscroll-behavior:contain;">
+                <div style="position:sticky;top:0;z-index:3;background:var(--surface-raised);margin:0 -18px 6px;padding:12px 18px 10px;border-radius:22px 22px 0 0;">
+                  <div style="width:40px;height:4px;border-radius:999px;background:var(--surface-pressed);margin:0 auto 10px;"></div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <span style="font-size:17px;font-weight:600;">Filtros</span>
+                    <button onClick="{{ clearLibFilters }}" style="font-size:13px;color:var(--text-muted);padding:6px 4px;" style-hover="color:var(--text);">Limpiar</button>
+                  </div>
+                </div>
+                <sc-for list="{{ filterChips }}" as="fc" hint-placeholder-count="4">
+                  <div style="padding:10px 0;border-top:1px solid var(--surface-pressed);">
+                    <div style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">{{ fc.name }}</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                      <sc-for list="{{ fc.options }}" as="o" hint-placeholder-count="5">
+                        <button onClick="{{ o.onClick }}" style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;color:{{ o.pillColor }};background:{{ o.pillBg }};transition:background .14s;">{{ o.label }}</button>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="padding:14px 0;border-top:1px solid var(--surface-pressed);">
+                  <div style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">Ordenar por</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                    <sc-for list="{{ sortOptions }}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{ o.onClick }}" style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:999px;color:{{ o.pillColor }};background:{{ o.pillBg }};transition:background .14s;">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </div>
+                <button onClick="{{ toggleLibFilters }}" style="width:100%;margin-top:18px;background:var(--accent);color:#0F0F0F;font-weight:600;font-size:15px;padding:14px;border-radius:13px;">Ver resultados</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- GRID / LIST content -->
+          <sc-if value="{{ libShowItems }}" hint-placeholder-val="{{ true }}">
+            <sc-if value="{{ cardsEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:80px 20px;">
+                <div style="color:var(--text-faint);display:inline-flex;margin-bottom:16px;">{{ iconFilm }}</div>
+                <h3 style="font-size:18px;font-weight:600;margin:0 0 6px;">{{ emptyTitle }}</h3>
+                <p style="font-size:14px;color:var(--text-muted);margin:0 0 20px;">{{ emptySub }}</p>
+                <button onClick="{{ nav.download }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:14px;padding:12px 22px;border-radius:10px;">Descargar algo</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showGrid }}" hint-placeholder-val="{{ true }}">
+              <div class="gr-lib-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;">
+                <sc-for list="{{ cards }}" as="v" hint-placeholder-count="8">
+                  <div onClick="{{ v.onOpen }}" class="gr-card" style="background:var(--surface);border-radius:14px;padding:10px;cursor:pointer;transition:background .16s;" style-hover="background:var(--surface-raised);">
+                    <div style="position:relative;aspect-ratio:16/9;border-radius:10px;background:var(--surface-pressed);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:12px;font-weight:600;overflow:hidden;">
+                      {{ v.plat }}
+                      <span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ v.duration }}</span>
+                      <button onClick="{{ v.onToggleSel }}" aria-label="Seleccionar" class="gr-card-hover" style="position:absolute;top:8px;left:8px;width:22px;height:22px;border-radius:6px;background:{{ v.selBg }};display:flex;align-items:center;justify-content:center;color:#0F0F0F;">{{ v.selCheck }}</button>
+                      <button onClick="{{ v.onFav }}" aria-label="Favorito" class="gr-card-hover" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:8px;background:rgba(10,10,10,.6);display:flex;align-items:center;justify-content:center;color:{{ v.favColor }};">{{ v.favIcon }}</button>
+                    </div>
+                    <div style="padding:12px 6px 6px;">
+                      <div style="font-size:14px;font-weight:500;line-height:1.35;margin-bottom:8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">{{ v.title }}</div>
+                      <div style="font-size:12px;color:var(--text-muted);">{{ v.plat }} · {{ v.format }} · {{ v.size }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showList }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <sc-for list="{{ cards }}" as="v" hint-placeholder-count="6">
+                  <div onClick="{{ v.onOpen }}" style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:12px;padding:10px 14px;cursor:pointer;transition:background .16s;" style-hover="background:var(--surface-raised);">
+                    <button onClick="{{ v.onToggleSel }}" aria-label="Seleccionar" style="width:20px;height:20px;border-radius:6px;background:{{ v.selBg }};display:flex;align-items:center;justify-content:center;color:#0F0F0F;flex-shrink:0;">{{ v.selCheck }}</button>
+                    <div style="position:relative;width:88px;height:50px;border-radius:8px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:10px;font-weight:600;">{{ v.plat }}<span style="position:absolute;bottom:4px;right:4px;background:#0A0A0A;color:#F2F0ED;font-size:9px;padding:1px 4px;border-radius:4px;">{{ v.duration }}</span></div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ v.title }}</div>
+                      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ v.author }}</div>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0;" class="gr-hide-mobile">{{ v.plat }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);width:110px;flex-shrink:0;" class="gr-hide-mobile">{{ v.format }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);width:70px;flex-shrink:0;" class="gr-hide-mobile">{{ v.size }}</div>
+                    <div style="font-size:12px;color:var(--text-muted);width:90px;flex-shrink:0;" class="gr-hide-mobile">{{ v.dateLabel }}</div>
+                    <button onClick="{{ v.onFav }}" aria-label="Favorito" style="width:30px;height:30px;border-radius:8px;color:{{ v.favColor }};display:flex;align-items:center;justify-content:center;flex-shrink:0;" style-hover="background:var(--surface-pressed);">{{ v.favIcon }}</button>
+                    <button aria-label="Más" style="width:30px;height:30px;border-radius:8px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;" style-hover="background:var(--surface-pressed);">{{ iconMore }}</button>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </sc-if>
+
+          <!-- COLLECTIONS -->
+          <sc-if value="{{ libIsCollections }}" hint-placeholder-val="{{ false }}">
+            <div class="gr-lib-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;">
+              <button onClick="{{ createCollection }}" style="min-height:200px;border-radius:14px;background:var(--surface);color:var(--text-muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:500;transition:background .16s;" style-hover="background:var(--surface-raised);">{{ iconPlusSm }} Nueva colección</button>
+              <sc-for list="{{ cols }}" as="c" hint-placeholder-count="3">
+                <div onClick="{{ c.onOpen }}" style="border-radius:14px;background:var(--surface);padding:10px;cursor:pointer;transition:background .16s;" style-hover="background:var(--surface-raised);">
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;border-radius:10px;overflow:hidden;aspect-ratio:16/10;">
+                    <sc-for list="{{ c.thumbs }}" as="t" hint-placeholder-count="4"><div style="background:var(--surface-pressed);"></div></sc-for>
+                  </div>
+                  <div style="padding:12px 6px 6px;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                      <span style="width:9px;height:9px;border-radius:999px;background:{{ c.color }};flex-shrink:0;"></span>
+                      <span style="font-size:14px;font-weight:600;">{{ c.name }}</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text-muted);">{{ c.count }} videos · {{ c.dateLabel }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <!-- TRASH -->
+          <sc-if value="{{ libIsTrash }}" hint-placeholder-val="{{ false }}">
+            <div>
+              <div style="display:flex;justify-content:space-between;align-items:center;background:var(--surface);border-radius:12px;padding:14px 18px;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                <span style="font-size:13px;color:var(--text-muted);">Los elementos se borran definitivamente a los 30 días.</span>
+                <sc-if value="{{ trashEmpty }}" hint-placeholder-val="{{ false }}"><span></span></sc-if>
+                <button onClick="{{ emptyTrash }}" style="font-size:13px;font-weight:500;color:var(--warning);padding:8px 14px;border-radius:9px;background:var(--surface-raised);">Vaciar papelera</button>
+              </div>
+              <sc-if value="{{ trashEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;padding:70px 20px;">
+                  <div style="color:var(--text-faint);display:inline-flex;margin-bottom:16px;">{{ iconFilm }}</div>
+                  <h3 style="font-size:18px;font-weight:600;margin:0 0 6px;">La papelera está vacía</h3>
+                  <p style="font-size:14px;color:var(--text-muted);margin:0;">Lo que elimines aparecerá aquí durante 30 días.</p>
+                </div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <sc-for list="{{ trashItems }}" as="t" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:12px;padding:12px 14px;">
+                    <div style="width:64px;height:40px;border-radius:7px;background:var(--surface-pressed);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--text-faint);">{{ t.platform }}</div>
+                    <div style="flex:1;min-width:0;">
+                      <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ t.title }}</div>
+                      <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ t.format }} · {{ t.size }} · {{ t.dateLabel }} · quedan {{ t.left }} días</div>
+                    </div>
+                    <button onClick="{{ t.onRestore }}" style="font-size:13px;font-weight:500;color:var(--text);padding:8px 14px;border-radius:9px;background:var(--surface-raised);flex-shrink:0;">Restaurar</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- BULK BAR -->
+          <sc-if value="{{ hasSel }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:60;background:var(--surface-raised);border-radius:14px;padding:8px 8px 8px 18px;display:flex;align-items:center;gap:14px;animation:gr-fade .18s ease both;">
+              <span style="font-size:13px;font-weight:600;">{{ selCount }} seleccionados</span>
+              <div style="width:1px;height:22px;background:var(--surface-pressed);"></div>
+              <button onClick="{{ redownloadSel }}" style="font-size:13px;color:var(--text);padding:8px 12px;border-radius:9px;display:flex;align-items:center;gap:7px;" style-hover="background:var(--surface-pressed);">{{ iconDownload }} Descargar</button>
+              <button onClick="{{ moveSel }}" style="font-size:13px;color:var(--text);padding:8px 12px;border-radius:9px;display:flex;align-items:center;gap:7px;" style-hover="background:var(--surface-pressed);">{{ iconFolder }} Mover</button>
+              <button onClick="{{ favSel }}" style="font-size:13px;color:var(--text);padding:8px 12px;border-radius:9px;display:flex;align-items:center;gap:7px;" style-hover="background:var(--surface-pressed);">{{ iconStar }} Favorito</button>
+              <button onClick="{{ deleteSel }}" style="font-size:13px;color:var(--warning);padding:8px 12px;border-radius:9px;display:flex;align-items:center;gap:7px;" style-hover="background:var(--surface-pressed);">{{ iconTrash }} Eliminar</button>
+              <button onClick="{{ clearSel }}" aria-label="Cancelar selección" style="width:34px;height:34px;border-radius:9px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;" style-hover="background:var(--surface-pressed);">{{ iconClose }}</button>
+            </div>
+          </sc-if>
+
+          <!-- DETAIL PANEL -->
+          <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.4);animation:gr-in .18s ease both;"></div>
+            <div class="gr-detail" style="position:fixed;top:0;right:0;bottom:0;z-index:71;width:420px;max-width:100vw;background:var(--surface);overflow-y:auto;animation:gr-slide .22s ease both;">
+              <div style="position:sticky;top:0;background:var(--surface);display:flex;justify-content:space-between;align-items:center;padding:16px 20px;z-index:2;">
+                <span style="font-size:13px;font-weight:600;color:var(--text-muted);">Detalle</span>
+                <div style="display:flex;gap:4px;">
+                  <button onClick="{{ detail.onFav }}" aria-label="Favorito" style="width:34px;height:34px;border-radius:9px;color:{{ detail.favColor }};display:flex;align-items:center;justify-content:center;" style-hover="background:var(--surface-raised);">{{ detail.favIcon }}</button>
+                  <button onClick="{{ closeDetail }}" aria-label="Cerrar" style="width:34px;height:34px;border-radius:9px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;" style-hover="background:var(--surface-raised);">{{ iconClose }}</button>
+                </div>
+              </div>
+              <div style="padding:0 20px 40px;">
+                <div style="position:relative;aspect-ratio:16/9;border-radius:12px;background:var(--surface-pressed);display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;font-weight:600;margin-bottom:18px;">{{ detail.plat }}<span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ detail.duration }}</span></div>
+                <h3 style="font-size:17px;font-weight:600;letter-spacing:-0.02em;line-height:1.35;margin:0 0 6px;">{{ detail.title }}</h3>
+                <p style="font-size:13px;color:var(--text-muted);margin:0 0 22px;">{{ detail.author }} · {{ detail.views }} vistas</p>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 12px;margin-bottom:22px;">
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Plataforma</div><div style="font-size:13px;">{{ detail.plat }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Formato</div><div style="font-size:13px;">{{ detail.format }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Tamaño</div><div style="font-size:13px;">{{ detail.size }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Descargado</div><div style="font-size:13px;">{{ detail.dateLabel }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Colección</div><div style="font-size:13px;">{{ detail.collName }}</div></div>
+                  <div><div style="font-size:11px;color:var(--text-faint);margin-bottom:3px;">Calidad</div><div style="font-size:13px;">{{ detail.quality }}</div></div>
+                </div>
+
+                <div style="font-size:11px;color:var(--text-faint);margin-bottom:7px;">URL original</div>
+                <div style="display:flex;align-items:center;gap:10px;background:var(--surface-raised);border-radius:10px;padding:10px 12px;margin-bottom:22px;">
+                  <span style="flex:1;font-size:12px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ detail.url }}</span>
+                  <button onClick="{{ copyUrl }}" aria-label="Copiar" style="color:var(--text-muted);display:flex;flex-shrink:0;" style-hover="color:var(--text);">{{ iconCopy }}</button>
+                </div>
+
+                <div style="font-size:11px;color:var(--text-faint);margin-bottom:7px;">Historial de descargas</div>
+                <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:22px;">
+                  <sc-for list="{{ detail.history }}" as="h" hint-placeholder-count="2">
+                    <div style="display:flex;justify-content:space-between;font-size:12px;padding:8px 0;"><span>{{ h.q }}</span><span style="color:var(--text-muted);">{{ h.when }}</span></div>
+                  </sc-for>
+                </div>
+
+                <div style="font-size:11px;color:var(--text-faint);margin-bottom:7px;">Notas</div>
+                <textarea placeholder="Añade una nota…" style="width:100%;min-height:70px;resize:vertical;background:var(--surface-raised);border-radius:10px;padding:12px;font-size:13px;margin-bottom:22px;"></textarea>
+
+                <div style="font-size:11px;color:var(--text-faint);margin-bottom:7px;">Etiquetas</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;">
+                  <sc-for list="{{ detail.tags }}" as="tag" hint-placeholder-count="2"><span style="font-size:12px;background:var(--surface-raised);color:var(--text-muted);padding:5px 11px;border-radius:999px;">{{ tag }}</span></sc-for>
+                  <button style="font-size:12px;background:var(--surface-raised);color:var(--text-faint);padding:5px 11px;border-radius:999px;">+ añadir</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- SETTINGS placeholder -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div data-screen-label="Ajustes">
+          <h1 style="font-size:24px;font-weight:600;letter-spacing:-0.02em;margin:0 0 16px;">Ajustes</h1>
+          <div class="gr-hide-scroll" style="overflow-x:auto;margin-bottom:32px;">
+            <div style="display:flex;gap:2px;">
+              <sc-for list="{{ setTabs }}" as="t" hint-placeholder-count="6">
+                <button onClick="{{ t.onClick }}" style="position:relative;padding:8px 12px;font-size:13px;font-weight:500;color:{{ t.color }};white-space:nowrap;">
+                  {{ t.label }}
+                  <sc-if value="{{ t.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:12px;right:12px;bottom:-2px;height:2px;background:var(--accent);border-radius:2px;"></span></sc-if>
+                </button>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="max-width:1200px;">
+
+            <!-- PROFILE -->
+            <sc-if value="{{ setIsProfile }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="background:var(--surface);border-radius:16px;padding:32px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+                  <div style="width:104px;height:104px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:38px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;">{{ profileInitials }}</div>
+                  <div style="flex:1;min-width:220px;">
+                    <input value="{{ P.name }}" onInput="{{ setPName }}" aria-label="Nombre" style="font-size:28px;font-weight:600;letter-spacing:-0.02em;background:none;width:100%;margin-bottom:8px;" />
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                      <span style="font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:5px 11px;border-radius:999px;">Plan Pro</span>
+                      <span style="font-size:13px;color:var(--text-muted);">Miembro desde marzo 2025</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;flex-shrink:0;">
+                    <button onClick="{{ changePhoto }}" style="font-size:13px;font-weight:500;color:var(--text);background:var(--surface-raised);padding:11px 16px;border-radius:11px;display:flex;align-items:center;gap:8px;" style-hover="background:var(--surface-pressed);">{{ iconCamera }} Cambiar foto</button>
+                    <button onClick="{{ removePhoto }}" style="font-size:13px;font-weight:500;color:var(--text-muted);padding:11px 14px;border-radius:11px;" style-hover="background:var(--surface-raised);">Eliminar</button>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                  <sc-for list="{{ profileStats }}" as="st" hint-placeholder-count="4">
+                    <div style="background:var(--surface);border-radius:16px;padding:24px;">
+                      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">{{ st.label }}</div>
+                      <div style="font-size:32px;font-weight:600;letter-spacing:-0.02em;line-height:1;">{{ st.value }}</div>
+                      <sc-if value="{{ st.sub }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:var(--text-faint);margin-top:6px;">{{ st.sub }}</div></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:var(--surface);border-radius:16px;padding:24px;">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;"><div style="font-size:14px;font-weight:600;">Almacenamiento por tipo</div><div style="font-size:13px;color:var(--text-muted);">42 GB de 200 GB</div></div>
+                  <div style="display:flex;height:8px;border-radius:999px;overflow:hidden;gap:2px;margin-bottom:18px;">
+                    <sc-for list="{{ storageBars }}" as="b" hint-placeholder-count="3"><div style="width:{{ b.pct }};background:{{ b.color }};"></div></sc-for>
+                  </div>
+                  <div style="display:flex;gap:28px;flex-wrap:wrap;">
+                    <sc-for list="{{ storageBars }}" as="b" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:9px;font-size:13px;"><span style="width:10px;height:10px;border-radius:3px;background:{{ b.color }};"></span><span style="color:var(--text-muted);">{{ b.label }}</span><span style="font-weight:600;">{{ b.value }}</span></div></sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- PREFERENCES -->
+            <sc-if value="{{ setIsPrefs }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface);border-radius:14px;padding:6px 20px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;gap:16px;">
+                  <div><div style="font-size:14px;font-weight:500;">Tema</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Apariencia de la interfaz.</div></div>
+                  <div style="display:flex;background:var(--surface-raised);border-radius:9px;padding:3px;flex-shrink:0;">
+                    <sc-for list="{{ themeSeg2 }}" as="s" hint-placeholder-count="3"><button onClick="{{ s.onClick }}" style="font-size:12px;font-weight:500;padding:7px 14px;border-radius:7px;color:{{ s.color }};background:{{ s.bg }};transition:background .16s;">{{ s.label }}</button></sc-for>
+                  </div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;gap:16px;">
+                  <div style="font-size:14px;font-weight:500;">Idioma</div>
+                  <div data-dd style="position:relative;"><button onClick="{{ dd.lang.toggle }}" style="display:flex;align-items:center;gap:8px;background:var(--surface-raised);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);">{{ dd.lang.label }} <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button><sc-if value="{{ dd.lang.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:50px;right:0;z-index:50;min-width:200px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.lang.options }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};white-space:nowrap;" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;gap:16px;">
+                  <div style="font-size:14px;font-weight:500;">Zona horaria</div>
+                  <div data-dd style="position:relative;"><button onClick="{{ dd.tz.toggle }}" style="display:flex;align-items:center;gap:8px;background:var(--surface-raised);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);max-width:260px;"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ dd.tz.label }}</span> <span style="color:var(--text-muted);display:flex;flex-shrink:0;">{{ iconChevDown }}</span></button><sc-if value="{{ dd.tz.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:50px;right:0;z-index:50;min-width:240px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.tz.options }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};white-space:nowrap;" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="padding:18px 0;">
+                  <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Calidad por defecto</div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;"><sc-for list="{{ qualitySeg }}" as="q" hint-placeholder-count="5"><button onClick="{{ q.onClick }}" style="font-size:13px;font-weight:600;padding:9px 16px;border-radius:10px;background:{{ q.bg }};color:{{ q.fg }};transition:background .16s;">{{ q.label }}</button></sc-for></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="padding:18px 0;">
+                  <div style="font-size:14px;font-weight:500;margin-bottom:12px;">Formato por defecto</div>
+                  <div style="display:flex;gap:8px;"><sc-for list="{{ formatSeg }}" as="fo" hint-placeholder-count="3"><button onClick="{{ fo.onClick }}" style="font-size:13px;font-weight:600;padding:9px 18px;border-radius:10px;background:{{ fo.bg }};color:{{ fo.fg }};transition:background .16s;">{{ fo.label }}</button></sc-for></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="padding:18px 0;">
+                  <div style="font-size:14px;font-weight:500;margin-bottom:4px;">Plantilla de nombre de archivo</div>
+                  <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Variables: {titulo}, {calidad}, {plataforma}, {fecha}</div>
+                  <input value="{{ PR.filename }}" onInput="{{ setFilename }}" style="width:100%;background:var(--surface-raised);border-radius:10px;padding:12px 14px;font-size:14px;font-family:ui-monospace,monospace;" />
+                  <div style="font-size:12px;color:var(--text-faint);margin-top:8px;">Vista previa: <span style="color:var(--text-muted);font-family:ui-monospace,monospace;">{{ filenamePreview }}</span></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;gap:16px;">
+                  <div style="font-size:14px;font-weight:500;">Descargas simultáneas</div>
+                  <div data-dd style="position:relative;"><button onClick="{{ dd.prefConc.toggle }}" style="display:flex;align-items:center;gap:8px;background:var(--surface-raised);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);">{{ dd.prefConc.label }} <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button><sc-if value="{{ dd.prefConc.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:50px;right:0;z-index:50;min-width:120px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.prefConc.options }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if></div>
+                </div>
+                <div style="height:1px;background:var(--surface-pressed);"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 0;gap:16px;">
+                  <div style="font-size:14px;font-weight:500;">Vaciar papelera automáticamente</div>
+                  <div data-dd style="position:relative;"><button onClick="{{ dd.trash.toggle }}" style="display:flex;align-items:center;gap:8px;background:var(--surface-raised);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--text);">{{ dd.trash.label }} <span style="color:var(--text-muted);display:flex;">{{ iconChevDown }}</span></button><sc-if value="{{ dd.trash.open }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:50px;right:0;z-index:50;min-width:150px;background:var(--surface-raised);border-radius:12px;padding:6px;animation:gr-fade .14s ease both;"><sc-for list="{{ dd.trash.options }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.onClick }}" style="width:100%;text-align:left;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:{{ o.selColor }};background:{{ o.selBg }};" style-hover="background:var(--surface-pressed);">{{ o.label }}</button></sc-for></div></sc-if></div>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- SECURITY -->
+            <sc-if value="{{ setIsSecurity }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:20px;">
+                <div style="background:var(--surface);border-radius:14px;padding:20px;">
+                  <div style="font-size:14px;font-weight:600;margin-bottom:16px;">Cambiar contraseña</div>
+                  <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Contraseña actual</label>
+                  <input type="password" placeholder="••••••••" style="width:100%;background:var(--surface-raised);border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:14px;" />
+                  <label style="display:block;font-size:12px;color:var(--text-muted);margin-bottom:7px;">Nueva contraseña</label>
+                  <input type="password" placeholder="••••••••" style="width:100%;background:var(--surface-raised);border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:16px;" />
+                  <button onClick="{{ saveProfile }}" style="background:var(--accent);color:#0F0F0F;font-weight:600;font-size:13px;padding:11px 20px;border-radius:10px;">Actualizar</button>
+                </div>
+                <div style="background:var(--surface);border-radius:14px;padding:20px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+                  <div style="display:flex;align-items:center;gap:14px;">
+                    <span style="color:var(--text-muted);display:flex;">{{ iconShield }}</span>
+                    <div><div style="font-size:14px;font-weight:600;">Verificación en dos pasos</div><div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Un código adicional al iniciar sesión.</div></div>
+                  </div>
+                  <span onClick="{{ toggle2fa }}" style="width:36px;height:20px;border-radius:999px;background:{{ twofaTrackBg }};position:relative;flex-shrink:0;cursor:pointer;transition:background .18s;"><span style="position:absolute;top:2px;left:{{ twofaThumbX }};width:16px;height:16px;border-radius:999px;background:{{ twofaThumbBg }};transition:left .18s;"></span></span>
+                </div>
+                <div style="background:var(--surface);border-radius:14px;padding:6px 20px;">
+                  <div style="font-size:14px;font-weight:600;padding:16px 0 4px;">Sesiones activas</div>
+                  <sc-for list="{{ sessions }}" as="ses" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:14px;padding:16px 0;">
+                      <span style="color:var(--text-muted);display:flex;">{{ iconMonitorSm }}</span>
+                      <div style="flex:1;min-width:0;">
+                        <div style="font-size:14px;font-weight:500;">{{ ses.device }} · {{ ses.browser }}</div>
+                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">{{ ses.loc }} · {{ ses.last }}</div>
+                      </div>
+                      <sc-if value="{{ ses.current }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:600;color:var(--success);">Actual</span></sc-if>
+                      <sc-if value="{{ ses.revokable }}" hint-placeholder-val="{{ true }}"><button onClick="{{ ses.onRevoke }}" style="font-size:13px;font-weight:500;color:var(--warning);padding:7px 12px;border-radius:9px;background:var(--surface-raised);">Revocar</button></sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- PLAN -->
+            <sc-if value="{{ setIsPlan }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:16px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                  <sc-for list="{{ planUsage }}" as="u" hint-placeholder-count="3">
+                    <div style="background:var(--surface);border-radius:16px;padding:24px;">
+                      <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">{{ u.label }}</div>
+                      <div style="font-size:34px;font-weight:600;letter-spacing:-0.02em;line-height:1;">{{ u.value }}</div>
+                      <div style="font-size:12px;color:var(--text-faint);margin-top:6px;">{{ u.sub }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="background:var(--surface);border-radius:16px;padding:24px;">
+                  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:16px;gap:16px;flex-wrap:wrap;"><div style="font-size:14px;font-weight:600;">Almacenamiento</div><div style="font-size:13px;color:var(--text-muted);">42 GB de 200 GB usados</div></div>
+                  <div style="display:flex;height:8px;border-radius:999px;overflow:hidden;gap:2px;margin-bottom:18px;">
+                    <sc-for list="{{ storageBars }}" as="b" hint-placeholder-count="3"><div style="width:{{ b.pct }};background:{{ b.color }};"></div></sc-for>
+                  </div>
+                  <div style="display:flex;gap:28px;flex-wrap:wrap;">
+                    <sc-for list="{{ storageBars }}" as="b" hint-placeholder-count="3"><div style="display:flex;align-items:center;gap:9px;font-size:13px;"><span style="width:10px;height:10px;border-radius:3px;background:{{ b.color }};"></span><span style="color:var(--text-muted);">{{ b.label }}</span><span style="font-weight:600;">{{ b.value }}</span></div></sc-for>
+                  </div>
+                </div>
+                <div style="margin-top:8px;">
+                  <div style="font-size:14px;font-weight:600;margin-bottom:14px;">Tu plan y opciones</div>
+                  <div class="gr-plan-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                    <sc-for list="{{ plans }}" as="pl" hint-placeholder-count="3">
+                      <div style="background:{{ pl.bg }};border-radius:16px;padding:26px 24px;display:flex;flex-direction:column;gap:18px;">
+                        <div><div style="font-size:15px;font-weight:600;">{{ pl.name }}</div><div style="font-size:34px;font-weight:600;letter-spacing:-0.02em;margin-top:8px;">{{ pl.price }}<span style="font-size:14px;color:var(--text-muted);font-weight:400;">/mes</span></div></div>
+                        <div style="display:flex;flex-direction:column;gap:11px;flex:1;">
+                          <sc-for list="{{ pl.feats }}" as="ft" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-muted);"><span style="width:6px;height:6px;border-radius:999px;background:var(--text-faint);flex-shrink:0;"></span>{{ ft }}</div></sc-for>
+                        </div>
+                        <button style="width:100%;font-size:14px;font-weight:600;padding:12px;border-radius:11px;background:{{ pl.ctaBg }};color:{{ pl.ctaFg }};">{{ pl.cta }}</button>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="margin-top:8px;">
+                  <div style="font-size:14px;font-weight:600;margin-bottom:14px;">Complementos</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;">
+                    <sc-for list="{{ addons }}" as="ad" hint-placeholder-count="2">
+                      <div style="background:var(--surface);border-radius:16px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+                        <div><div style="font-size:14px;font-weight:600;">{{ ad.name }}</div><div style="font-size:13px;color:var(--text-muted);margin-top:3px;">{{ ad.desc }}</div></div>
+                        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;"><span style="font-size:14px;font-weight:600;">{{ ad.price }}</span><button style="font-size:13px;font-weight:500;color:var(--text);background:var(--surface-raised);padding:8px 16px;border-radius:10px;" style-hover="background:var(--surface-pressed);">Añadir</button></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="background:var(--surface);border-radius:16px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+                  <div><div style="font-size:14px;font-weight:600;">Método de pago</div><div style="font-size:13px;color:var(--text-muted);margin-top:3px;">Visa terminada en 4242 · expira 08/28</div></div>
+                  <button style="font-size:13px;font-weight:500;color:var(--text);background:var(--surface-raised);padding:10px 16px;border-radius:10px;" style-hover="background:var(--surface-pressed);">Actualizar</button>
+                </div>
+                <div style="background:var(--surface);border-radius:16px;padding:6px 22px;">
+                  <div style="font-size:14px;font-weight:600;padding:18px 0 8px;">Facturas</div>
+                  <sc-for list="{{ invoices }}" as="inv" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:center;gap:16px;padding:14px 0;font-size:13px;">
+                      <span style="flex:1;font-weight:500;">{{ inv.id }}</span>
+                      <span style="color:var(--text-muted);width:100px;">{{ inv.date }}</span>
+                      <span style="width:70px;">{{ inv.amount }}</span>
+                      <span style="color:var(--success);width:70px;">{{ inv.status }}</span>
+                      <button style="font-size:13px;color:var(--text-muted);" style-hover="color:var(--text);">PDF</button>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- NOTIFICATIONS -->
+            <sc-if value="{{ setIsNotif }}" hint-placeholder-val="{{ false }}">
+              <div style="background:var(--surface);border-radius:14px;padding:6px 20px;">
+                <div style="display:flex;align-items:center;padding:16px 0 12px;">
+                  <div style="flex:1;font-size:12px;color:var(--text-muted);">Evento</div>
+                  <div style="width:64px;text-align:center;font-size:12px;color:var(--text-muted);">Email</div>
+                  <div style="width:64px;text-align:center;font-size:12px;color:var(--text-muted);">Push</div>
+                  <div style="width:64px;text-align:center;font-size:12px;color:var(--text-muted);">App</div>
+                </div>
+                <sc-for list="{{ notifRows }}" as="nr" hint-placeholder-count="5">
+                  <div>
+                    <div style="height:1px;background:var(--surface-pressed);"></div>
+                    <div style="display:flex;align-items:center;padding:16px 0;">
+                      <div style="flex:1;font-size:14px;font-weight:500;">{{ nr.label }}</div>
+                      <sc-for list="{{ nr.chans }}" as="ch" hint-placeholder-count="3">
+                        <div style="width:64px;display:flex;justify-content:center;">
+                          <span onClick="{{ ch.onToggle }}" style="width:36px;height:20px;border-radius:999px;background:{{ ch.trackBg }};position:relative;cursor:pointer;transition:background .18s;"><span style="position:absolute;top:2px;left:{{ ch.thumbX }};width:16px;height:16px;border-radius:999px;background:{{ ch.thumbBg }};transition:left .18s;"></span></span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- DATA -->
+            <sc-if value="{{ setIsData }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:20px;">
+                <div style="background:var(--surface);border-radius:14px;padding:20px;">
+                  <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Exportar biblioteca</div>
+                  <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Descarga el índice de tus videos y colecciones.</div>
+                  <div style="display:flex;gap:10px;">
+                    <button onClick="{{ exportData }}" style="font-size:13px;font-weight:500;color:var(--text);background:var(--surface-raised);padding:11px 18px;border-radius:10px;">Exportar CSV</button>
+                    <button onClick="{{ exportData }}" style="font-size:13px;font-weight:500;color:var(--text);background:var(--surface-raised);padding:11px 18px;border-radius:10px;">Exportar JSON</button>
+                  </div>
+                </div>
+                <div style="background:var(--surface);border-radius:14px;padding:20px;">
+                  <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Eliminar cuenta</div>
+                  <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">Se borra tu biblioteca, colecciones y ajustes. No se puede deshacer.</div>
+                  <button onClick="{{ openDelete }}" style="font-size:13px;font-weight:600;color:var(--warning);background:var(--surface-raised);padding:11px 18px;border-radius:10px;">Eliminar mi cuenta</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- MODALS -->
+          <sc-if value="{{ modalIsCrop }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;">
+              <div onClick="{{ stop }}" style="width:360px;max-width:100%;background:var(--surface-raised);border-radius:16px;padding:24px;animation:gr-fade .18s ease both;">
+                <div style="font-size:15px;font-weight:600;margin-bottom:18px;">Recortar foto</div>
+                <div style="width:200px;height:200px;border-radius:999px;background:var(--surface-pressed);margin:0 auto 20px;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;">Vista previa</div>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px;">
+                  <span style="font-size:12px;color:var(--text-muted);">Zoom</span>
+                  <div style="flex:1;height:2px;background:var(--surface-pressed);border-radius:2px;position:relative;"><div style="position:absolute;left:0;top:0;bottom:0;width:40%;background:var(--accent);border-radius:2px;"></div><div style="position:absolute;left:40%;top:50%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:999px;background:var(--accent);"></div></div>
+                </div>
+                <div style="display:flex;gap:10px;">
+                  <button onClick="{{ closeModal }}" style="flex:1;font-size:13px;font-weight:500;color:var(--text-muted);padding:11px;border-radius:10px;background:var(--surface);">Cancelar</button>
+                  <button onClick="{{ applyCrop }}" style="flex:1;font-size:13px;font-weight:600;color:#0F0F0F;padding:11px;border-radius:10px;background:var(--accent);">Guardar</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ modalIsTwofa }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;">
+              <div onClick="{{ stop }}" style="width:360px;max-width:100%;background:var(--surface-raised);border-radius:16px;padding:24px;animation:gr-fade .18s ease both;text-align:center;">
+                <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Verificación en dos pasos</div>
+                <p style="font-size:13px;color:var(--text-muted);margin:0 0 20px;">Escanea el código con tu app de autenticación.</p>
+                <div style="width:180px;height:180px;background:var(--text);margin:0 auto 20px;border-radius:12px;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);gap:3px;padding:14px;">
+                  <sc-for list="{{ qrCells }}" as="cell" hint-placeholder-count="49"><div style="background:{{ cell }};border-radius:2px;"></div></sc-for>
+                </div>
+                <div style="display:flex;gap:10px;">
+                  <button onClick="{{ closeModal }}" style="flex:1;font-size:13px;font-weight:500;color:var(--text-muted);padding:11px;border-radius:10px;background:var(--surface);">Cancelar</button>
+                  <button onClick="{{ confirm2fa }}" style="flex:1;font-size:13px;font-weight:600;color:#0F0F0F;padding:11px;border-radius:10px;background:var(--accent);">Activar</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ modalIsDelete }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ closeModal }}" style="position:fixed;inset:0;z-index:75;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px;">
+              <div onClick="{{ stop }}" style="width:400px;max-width:100%;background:var(--surface-raised);border-radius:16px;padding:24px;animation:gr-fade .18s ease both;">
+                <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Eliminar cuenta</div>
+                <p style="font-size:13px;color:var(--text-muted);margin:0 0 16px;line-height:1.5;">Escribe tu nombre <span style="color:var(--text);font-weight:500;">{{ P.name }}</span> para confirmar. Esta acción es permanente.</p>
+                <input value="{{ deleteConfirm }}" onInput="{{ setDeleteConfirm }}" placeholder="Tu nombre" style="width:100%;background:var(--surface);border-radius:10px;padding:12px 14px;font-size:14px;margin-bottom:18px;" />
+                <div style="display:flex;gap:10px;">
+                  <button onClick="{{ closeModal }}" style="flex:1;font-size:13px;font-weight:500;color:var(--text-muted);padding:11px;border-radius:10px;background:var(--surface);">Cancelar</button>
+                  <button onClick="{{ confirmDelete }}" style="flex:1;font-size:13px;font-weight:600;padding:11px;border-radius:10px;background:{{ deleteBtnBg }};color:{{ deleteBtnFg }};">Eliminar definitivamente</button>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- profile save bar -->
+          <sc-if value="{{ profileDirty }}" hint-placeholder-val="{{ false }}">
+            <div style="position:fixed;left:0;right:0;bottom:0;z-index:55;background:var(--chrome);">
+              <div class="gr-savebar" style="max-width:1720px;margin:0 auto;padding:14px 40px;display:flex;justify-content:flex-end;align-items:center;gap:12px;">
+                <span style="flex:1;font-size:13px;color:var(--text-muted);">Cambios sin guardar</span>
+                <button onClick="{{ discardProfile }}" style="font-size:13px;font-weight:500;color:var(--text-muted);padding:10px 16px;border-radius:10px;">Descartar</button>
+                <button onClick="{{ saveProfile }}" style="font-size:13px;font-weight:600;color:#0F0F0F;background:var(--accent);padding:10px 20px;border-radius:10px;">Guardar cambios</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+    </main>
+  </div>
+</sc-if>
+
+<!-- TOASTS -->
+<div style="position:fixed;right:20px;bottom:20px;z-index:80;display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+  <sc-for list="{{ toasts }}" as="t" hint-placeholder-count="0">
+    <div style="background:var(--surface-raised);border-radius:12px;padding:13px 16px;display:flex;align-items:center;gap:16px;font-size:13px;animation:gr-fade .2s ease both;max-width:340px;">
+      <span>{{ t.msg }}</span>
+      <sc-if value="{{ t.action }}" hint-placeholder-val="{{ false }}"><button onClick="{{ t.onAction }}" style="font-size:13px;font-weight:600;color:var(--accent);">{{ t.action }}</button></sc-if>
+    </div>
+  </sc-for>
+</div>
+
+<style>
+.gr-auth{grid-template-columns:1fr;}
+@media (min-width:768px){ .gr-auth{grid-template-columns:1.05fr 1fr;} }
+@media (max-width:767px){ .gr-auth-panel{display:none !important;} }
+.gr-mobile-nav{display:none;}
+@media (max-width:767px){ .gr-desktop-nav{display:none !important;} .gr-mobile-nav{display:block !important;} .gr-main{padding:20px 16px 90px !important;} .gr-bar{padding:0 16px !important;} .gr-search{width:40px !important;justify-content:center;} .gr-search-x{display:none !important;} .gr-dl-grid{grid-template-columns:1fr !important;} .gr-savebar{padding:12px 16px !important;} }
+.gr-card-hover{opacity:0;transition:opacity .16s;}
+.gr-card:hover .gr-card-hover{opacity:1;}
+@media (hover:none){ .gr-card-hover{opacity:1 !important;} }
+@media (max-width:767px){ .gr-hide-mobile{display:none !important;} .gr-detail{width:100vw !important;} .gr-plan-grid{grid-template-columns:1fr !important;} .gr-3col{grid-template-columns:1fr !important;} .gr-6col{grid-template-columns:repeat(2,1fr) !important;} }
+@media (min-width:768px) and (max-width:1023px){ .gr-6col{grid-template-columns:repeat(3,1fr) !important;} }
+</style>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:&quot;100%&quot;,&quot;height&quot;:900}}">
+const PLATFORMS = ['YouTube','Instagram','TikTok','X','Facebook','Reddit'];
+const PLAT_CODE = {YouTube:'YT',Instagram:'IG',TikTok:'TT',X:'X',Facebook:'FB',Reddit:'RD'};
+
+function svg(paths, size){
+  return React.createElement('svg',{width:size||20,height:size||20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round'},
+    paths.map((d,i)=>React.createElement('path',{key:i,d})));
+}
+function svgEls(els){
+  return React.createElement('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round'}, els);
+}
+const IC = {
+  search: ()=>svgEls([React.createElement('circle',{key:0,cx:11,cy:11,r:7}),React.createElement('path',{key:1,d:'m21 21-4.3-4.3'})]),
+  bell: ()=>svg(['M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9','M10.3 21a1.94 1.94 0 0 0 3.4 0']),
+  sun: ()=>svgEls([React.createElement('circle',{key:0,cx:12,cy:12,r:4}),React.createElement('path',{key:1,d:'M12 2v2M12 20v2M5 5l1.5 1.5M17.5 17.5 19 19M2 12h2M20 12h2M5 19l1.5-1.5M17.5 6.5 19 5'})]),
+  moon: ()=>svg(['M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z']),
+  monitor: ()=>svgEls([React.createElement('rect',{key:0,x:2,y:3,width:20,height:14,rx:2}),React.createElement('path',{key:1,d:'M8 21h8M12 17v4'})]),
+  user: ()=>svgEls([React.createElement('circle',{key:0,cx:12,cy:8,r:4}),React.createElement('path',{key:1,d:'M4 21a8 8 0 0 1 16 0'})]),
+  gear: ()=>svgEls([React.createElement('circle',{key:0,cx:12,cy:12,r:3}),React.createElement('path',{key:1,d:'M12 2v3M12 19v3M22 12h-3M5 12H2M18.4 5.6l-2 2M7.6 16.4l-2 2M18.4 18.4l-2-2M7.6 7.6l-2-2'})]),
+  help: ()=>svgEls([React.createElement('circle',{key:0,cx:12,cy:12,r:9}),React.createElement('path',{key:1,d:'M9.5 9a2.5 2.5 0 0 1 4.5 1.5c0 1.5-2 2-2 3'}),React.createElement('path',{key:2,d:'M12 17h.01'})]),
+  logout: ()=>svg(['M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4','m10 17 5-5-5-5','M15 12H3']),
+  link: ()=>svg(['M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1.5 1.5','M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1.5-1.5']),
+  clip: ()=>svgEls([React.createElement('rect',{key:0,x:8,y:2,width:8,height:4,rx:1}),React.createElement('path',{key:1,d:'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2'})]),
+  x: ()=>svg(['M18 6 6 18','m6 6 12 12']),
+  check: ()=>svg(['M20 6 9 17l-5-5']),
+  play: ()=>svgEls([React.createElement('path',{key:0,d:'M6 4v16l14-8z'})]),
+  pause: ()=>svg(['M6 4v16M18 4v16']),
+  chevronDown: ()=>svg(['m6 9 6 6 6-6']),
+  chevronRight: ()=>svg(['m9 6 6 6-6 6']),
+  eye: ()=>svgEls([React.createElement('path',{key:0,d:'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z'}),React.createElement('circle',{key:1,cx:12,cy:12,r:3})]),
+  eyeOff: ()=>svg(['M10.7 5.1A9.7 9.7 0 0 1 12 5c6.5 0 10 7 10 7a13.3 13.3 0 0 1-2.3 3','M6.6 6.6C3.6 8.2 2 12 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.4-1','m2 2 20 20']),
+  inbox: ()=>React.createElement('svg',{width:48,height:48,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.25,strokeLinecap:'round',strokeLinejoin:'round'},[React.createElement('path',{key:0,d:'M22 12h-6l-2 3h-4l-2-3H2'}),React.createElement('path',{key:1,d:'M5.5 5.5 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.5-6.5A2 2 0 0 0 16.7 4H7.3a2 2 0 0 0-1.8 1.5Z'})]),
+  star: ()=>svg(['M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z']),
+  starFill: ()=>React.createElement('svg',{width:20,height:20,viewBox:'0 0 24 24',fill:'currentColor',stroke:'currentColor',strokeWidth:1.5,strokeLinejoin:'round'},[React.createElement('path',{key:0,d:'M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z'})]),
+  grid: ()=>React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5},[React.createElement('rect',{key:0,x:3,y:3,width:7,height:7,rx:1.5}),React.createElement('rect',{key:1,x:14,y:3,width:7,height:7,rx:1.5}),React.createElement('rect',{key:2,x:3,y:14,width:7,height:7,rx:1.5}),React.createElement('rect',{key:3,x:14,y:14,width:7,height:7,rx:1.5})]),
+  list: ()=>svg(['M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'],18),
+  folder: ()=>svg(['M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z']),
+  trash: ()=>svg(['M4 7h16M10 7V5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12']),
+  more: ()=>React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'currentColor'},[React.createElement('circle',{key:0,cx:12,cy:5,r:1.6}),React.createElement('circle',{key:1,cx:12,cy:12,r:1.6}),React.createElement('circle',{key:2,cx:12,cy:19,r:1.6})]),
+  copy: ()=>React.createElement('svg',{width:16,height:16,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round'},[React.createElement('rect',{key:0,x:9,y:9,width:12,height:12,rx:2}),React.createElement('path',{key:1,d:'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1'})]),
+  download: ()=>svg(['M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'],18),
+  plus: ()=>svg(['M12 5v14M5 12h14'],18),
+  film: ()=>React.createElement('svg',{width:48,height:48,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.25,strokeLinecap:'round',strokeLinejoin:'round'},[React.createElement('rect',{key:0,x:2.5,y:4,width:19,height:16,rx:2}),React.createElement('path',{key:1,d:'M7 4v16M17 4v16M2.5 9h4.5M2.5 15h4.5M17 9h4.5M17 15h4.5'})]),
+  camera: ()=>svgEls([React.createElement('path',{key:0,d:'M3 8a2 2 0 0 1 2-2h1.5l1-2h5l1 2H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z'}),React.createElement('circle',{key:1,cx:12,cy:13,r:3.2})]),
+  shield: ()=>svg(['M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z']),
+  monitorSm: ()=>React.createElement('svg',{width:18,height:18,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round'},[React.createElement('rect',{key:0,x:2,y:3,width:20,height:14,rx:2}),React.createElement('path',{key:1,d:'M8 21h8M12 17v4'})]),
+};
+
+class Component extends DCLogic {
+  state = {
+    theme:'dark',
+    authed:false,
+    route:'login',
+    f:{ email:'', pass:'', name:'' },
+    showPass:false, remember:true, terms:false,
+    // download
+    url:'', batchMode:false, analyzing:false, result:null, dlError:'',
+    quality:'1080p', dlOpts:{subs:false,thumb:true,collection:false}, showClip:true,
+    // search / overlays
+    searchExpanded:false, avatarOpen:false, notifOpen:false,
+    q:{ global:'' },
+    // queue
+    concurrency:'2', doneExpanded:true, openDropdown:null,
+    queue:[
+      {id:1,title:'Cómo funciona la compresión de video moderna',platform:'YouTube',format:'1080p MP4',status:'downloading',pct:42,speed:'8.4 MB/s',etaS:38,size:'182 MB'},
+      {id:2,title:'Entrevista completa — sesión de estudio',platform:'YouTube',format:'1440p MP4',status:'downloading',pct:12,speed:'5.1 MB/s',etaS:120,size:'640 MB'},
+      {id:3,title:'Clip corto vertical',platform:'TikTok',format:'720p MP4',status:'paused',pct:60,speed:'—',etaS:0,size:'24 MB'},
+      {id:4,title:'Este video ya no está disponible',platform:'X',format:'720p MP4',status:'error',pct:0,speed:'—',etaS:0,size:'—'},
+      {id:5,title:'Documental — parte 1',platform:'YouTube',format:'Audio MP3',status:'done',pct:100,speed:'—',etaS:0,size:'58 MB'},
+    ],
+    toasts:[],
+    videos:[
+      {id:1,title:'Cómo funciona la compresión de video moderna, explicado a fondo',author:'Estudio Norte',platform:'YouTube',quality:'1080p',format:'1080p MP4',size:'720 MB',sizeB:720,duration:'12:04',views:'1.2M',days:5,dateLabel:'hace 5 días',favorite:true,collectionId:1,url:'https://youtube.com/watch?v=a1b2c3',notes:'',tags:['tutorial','codec']},
+      {id:2,title:'Entrevista completa — sesión de estudio en directo',author:'Canal Abierto',platform:'Facebook',quality:'1440p',format:'1440p MP4',size:'1.4 GB',sizeB:1400,duration:'48:21',views:'82K',days:12,dateLabel:'hace 12 días',favorite:false,collectionId:null,url:'https://vimeo.com/771122',notes:'',tags:['entrevista']},
+      {id:4,title:'Rutina de color en Instagram — antes y después',author:'@lumafilms',platform:'Instagram',quality:'1080p',format:'1080p MP4',size:'88 MB',sizeB:88,duration:'0:58',views:'340K',days:2,dateLabel:'hace 2 días',favorite:true,collectionId:null,url:'https://instagram.com/reel/xyz',notes:'',tags:['color','reel']},
+      {id:5,title:'Ambient para concentrarse — una hora',author:'Nocturne',platform:'YouTube',quality:'Audio',format:'Audio MP3',size:'58 MB',sizeB:58,duration:'1:02:00',views:'3.1M',days:20,dateLabel:'hace 20 días',favorite:false,collectionId:3,url:'https://youtube.com/watch?v=amb01',notes:'',tags:['música','focus']},
+      {id:6,title:'Hilo desmontado en 90 segundos',author:'@datosgraf',platform:'X',quality:'720p',format:'720p MP4',size:'40 MB',sizeB:40,duration:'1:31',views:'210K',days:1,dateLabel:'ayer',favorite:false,collectionId:null,url:'https://x.com/datosgraf/status/1',notes:'',tags:[]},
+      {id:8,title:'Charla completa de la conferencia de otoño',author:'Foro Diseño',platform:'Facebook',quality:'1080p',format:'1080p MP4',size:'150 MB',sizeB:150,duration:'34:12',views:'56K',days:40,dateLabel:'hace 6 semanas',favorite:false,collectionId:2,url:'https://facebook.com/watch/?v=99',notes:'',tags:['charla']},
+      {id:9,title:'Timelapse de la ciudad en 4K, noche completa',author:'Estudio Norte',platform:'YouTube',quality:'2160p',format:'2160p MP4',size:'2.8 GB',sizeB:2800,duration:'6:40',views:'910K',days:8,dateLabel:'hace 8 días',favorite:true,collectionId:1,url:'https://youtube.com/watch?v=tl4k',notes:'',tags:['4k','timelapse']},
+      {id:10,title:'Detrás de cámaras — dirección de fotografía',author:'Canal Abierto',platform:'YouTube',quality:'1080p',format:'1080p MP4',size:'500 MB',sizeB:500,duration:'22:15',views:'44K',days:15,dateLabel:'hace 15 días',favorite:false,collectionId:3,url:'https://vimeo.com/554433',notes:'',tags:['bts']},
+      {id:11,title:'Truco de transición vertical',author:'@editcuts',platform:'TikTok',quality:'720p',format:'720p MP4',size:'18 MB',sizeB:18,duration:'0:22',views:'2.4M',days:3,dateLabel:'hace 3 días',favorite:false,collectionId:null,url:'https://tiktok.com/@editcuts/video/1',notes:'',tags:['transición']},
+      {id:12,title:'Receta corta — pan sin amasar',author:'@cocinaplana',platform:'Instagram',quality:'720p',format:'720p MP4',size:'60 MB',sizeB:60,duration:'0:44',views:'780K',days:6,dateLabel:'hace 6 días',favorite:false,collectionId:2,url:'https://instagram.com/reel/pan',notes:'',tags:['receta']},
+      {id:13,title:'Explicación del algoritmo de recomendación',author:'r/programacion',platform:'Reddit',quality:'480p',format:'480p MP4',size:'30 MB',sizeB:30,duration:'8:03',views:'19K',days:30,dateLabel:'hace 1 mes',favorite:false,collectionId:null,url:'https://reddit.com/r/programacion/x',notes:'',tags:[]},
+      {id:14,title:'Sesión de mezcla — masterclass de audio',author:'Nocturne',platform:'YouTube',quality:'Audio',format:'Audio M4A',size:'92 MB',sizeB:92,duration:'1:48:00',views:'128K',days:50,dateLabel:'hace 7 semanas',favorite:true,collectionId:3,url:'https://youtube.com/watch?v=mix01',notes:'',tags:['audio','master']},
+    ],
+    collections:[
+      {id:1,name:'Referencias de edición',color:'#8A6D6D',days:5},
+      {id:2,name:'Ver después',color:'#6D7F8A',days:1},
+      {id:3,name:'Música y audio',color:'#7A6D8A',days:20},
+    ],
+    trash:[
+      {id:3,title:'Clip privado que fue eliminado',platform:'TikTok',format:'720p MP4',size:'24 MB',dateLabel:'eliminado hace 3 días',left:27},
+      {id:7,title:'Video antiguo de prueba',platform:'Reddit',format:'480p MP4',size:'30 MB',dateLabel:'eliminado hace 11 días',left:19},
+    ],
+    lib:{ tab:'all', view:'grid', search:'', sort:'recent', filters:{platform:null,format:null,quality:null,date:null}, sel:[], openFilter:null },
+    detailId:null,
+    setTab:'profile',
+    profile:{ name:'Alex Rivera', username:'alexrivera', email:'alex@correo.com', bio:'Archivo referencias de edición, charlas y música para el estudio.', hasAvatar:false },
+    profileDirty:false, usernameEdited:false,
+    prefs:{ language:'Español', timezone:'GMT−6 · Ciudad de México', quality:'1080p', format:'MP4', filename:'{titulo}-{calidad}', concurrency:'2', autoTrash:'30 días' },
+    notif:{
+      done:{email:true,push:true,app:true},
+      error:{email:true,push:false,app:true},
+      features:{email:false,push:false,app:true},
+      weekly:{email:true,push:false,app:false},
+      billing:{email:true,push:false,app:true},
+    },
+    twofa:false,
+    sessions:[
+      {id:1,device:'MacBook Pro',browser:'Safari',loc:'Ciudad de México, MX',last:'ahora',current:true},
+      {id:2,device:'iPhone 15',browser:'App iOS',loc:'Ciudad de México, MX',last:'hace 2 h',current:false},
+      {id:3,device:'Windows PC',browser:'Chrome',loc:'Guadalajara, MX',last:'hace 3 días',current:false},
+    ],
+    invoices:[
+      {id:'INV-0042',date:'01 jul 2026',amount:'$12.00',status:'Pagada'},
+      {id:'INV-0041',date:'01 jun 2026',amount:'$12.00',status:'Pagada'},
+      {id:'INV-0040',date:'01 may 2026',amount:'$12.00',status:'Pagada'},
+    ],
+    modal:null, deleteConfirm:'',
+    home:{ url:'', analyzing:false, result:null, guestLeft:3, faqOpen:0 },
+  };
+
+  componentDidMount(){
+    this.applyTheme();
+    this._mq = window.matchMedia('(prefers-color-scheme: dark)');
+    this._mqL = ()=>{ if(this.state.theme==='system') this.applyTheme(); };
+    this._mq.addEventListener('change', this._mqL);
+    this._tick = setInterval(()=>this.tickQueue(), 500);
+    this._toastId = 0;
+    this._key = (e)=>{ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); this.setState({searchExpanded:true}); const el=document.querySelector('input[placeholder="Buscar"]'); if(el) el.focus(); } };
+    window.addEventListener('keydown', this._key);
+    this._ddClose = (e)=>{ if(this.state.openDropdown && e.target.closest && !e.target.closest('[data-dd]')) this.setState({openDropdown:null}); };
+    document.addEventListener('mousedown', this._ddClose);
+  }
+  componentWillUnmount(){ clearInterval(this._tick); this._mq&&this._mq.removeEventListener('change',this._mqL); window.removeEventListener('keydown',this._key); document.removeEventListener('mousedown',this._ddClose); }
+
+  applyTheme(){
+    const t = this.state.theme==='system' ? (this._mq&&this._mq.matches?'dark':'light') : this.state.theme;
+    document.documentElement.setAttribute('data-theme', t);
+  }
+  setTheme(t){ this.setState({theme:t}, ()=>this.applyTheme()); }
+  cycleTheme(){ const o=['dark','light','system']; const i=o.indexOf(this.state.theme); this.setTheme(o[(i+1)%3]); }
+
+  go(route){ this.setState({route, avatarOpen:false, notifOpen:false, openDropdown:null}); window.scrollTo(0,0); }
+
+  mkDD(id, value, options, setter){
+    const s=this.state;
+    const selOpt = options.find(o=>(typeof o==='object'?o.value:o)===value);
+    const label = selOpt ? (typeof selOpt==='object'?selOpt.label:selOpt) : value;
+    return { value, label, open:s.openDropdown===id,
+      toggle:(e)=>{ e&&e.stopPropagation&&e.stopPropagation(); this.setState(st=>({openDropdown:st.openDropdown===id?null:id})); },
+      options: options.map(opt=>{ const val=typeof opt==='object'?opt.value:opt; const lab=typeof opt==='object'?opt.label:opt; const sel=val===value; return { label:lab, sel, selColor:sel?'var(--text)':'var(--text-muted)', selBg:sel?'var(--surface-pressed)':'transparent', onClick:()=>{ setter(val); this.setState({openDropdown:null}); } }; }) };
+  }
+
+  tickQueue(){
+    let changed=false;
+    const queue = this.state.queue.map(q=>{
+      if(q.status==='downloading'){
+        changed=true;
+        let pct=Math.min(100, q.pct + (2+Math.random()*4));
+        let etaS=Math.max(0, Math.round(q.etaS*(1-pct/100)));
+        if(pct>=100) return {...q,pct:100,status:'done',speed:'—',etaS:0};
+        return {...q,pct,etaS};
+      }
+      return q;
+    });
+    if(changed) this.setState({queue});
+  }
+
+  toast(msg, action, onAction){
+    const id = ++this._toastId;
+    this.setState(s=>({toasts:[...s.toasts,{id,msg,action,onAction}]}));
+    setTimeout(()=>this.setState(s=>({toasts:s.toasts.filter(t=>t.id!==id)})), 4000);
+  }
+
+  detectPlatform(url){
+    const u=(url||'').toLowerCase();
+    if(u.includes('youtu')) return 'YouTube';
+    if(u.includes('instagram')) return 'Instagram';
+    if(u.includes('tiktok')) return 'TikTok';
+    if(u.includes('x.com')||u.includes('twitter')) return 'X';
+    if(u.includes('facebook')||u.includes('fb.watch')) return 'Facebook';
+    if(u.includes('reddit')) return 'Reddit';
+    return null;
+  }
+
+  analyze(){
+    const url=this.state.url.trim();
+    if(!url){ this.setState({dlError:'El enlace no parece válido'}); return; }
+    const plat=this.detectPlatform(url) || 'YouTube';
+    this.setState({analyzing:true,result:null,dlError:''});
+    setTimeout(()=>{
+      this.setState({analyzing:false,result:{
+        title:'Cómo funciona la compresión de video moderna, explicado a fondo',
+        author:'Estudio Norte', views:'1.2M', date:'hace 3 meses',
+        duration:'12:04', platform:plat, platformLabel:plat,
+      }});
+    }, 1300);
+  }
+
+  qualitySizes(){ return {'2160p':'2.8 GB','1440p':'1.4 GB','1080p':'720 MB','720p':'340 MB','480p':'180 MB','Audio MP3':'12 MB','Audio M4A':'9 MB'}; }
+
+  addToQueue(){
+    const r=this.state.result; if(!r) return;
+    const id=Date.now();
+    this.setState(s=>({queue:[{id,title:r.title,platform:r.platform,format:this.state.quality.startsWith('Audio')?this.state.quality:this.state.quality+' MP4',status:'downloading',pct:0,speed:'6.2 MB/s',etaS:60,size:this.qualitySizes()[this.state.quality]||'—'}, ...s.queue]}));
+  }
+
+  setLib(patch){ this.setState(s=>({lib:{...s.lib, ...patch}})); }
+
+  libVals(){
+    const s=this.state, L=s.lib;
+    const collById = Object.fromEntries(s.collections.map(c=>[c.id,c]));
+    const platCode=PLAT_CODE;
+
+    // base set for current tab
+    let base = s.videos.slice();
+    if(L.tab==='favorites') base = base.filter(v=>v.favorite);
+    // apply search + filters
+    const dateMax={ 'Hoy':1,'Esta semana':7,'Este mes':30,'Este año':365 }[L.filters.date];
+    const list = base.filter(v=>{
+      if(L.search && !(v.title+v.author).toLowerCase().includes(L.search.toLowerCase())) return false;
+      if(L.filters.platform && v.platform!==L.filters.platform) return false;
+      if(L.filters.format && !v.format.includes(L.filters.format)) return false;
+      if(L.filters.quality && v.quality!==L.filters.quality) return false;
+      if(dateMax && v.days>dateMax) return false;
+      return true;
+    });
+    if(L.sort==='recent') list.sort((a,b)=>a.days-b.days);
+    else if(L.sort==='title') list.sort((a,b)=>a.title.localeCompare(b.title));
+    else if(L.sort==='size') list.sort((a,b)=>b.sizeB-a.sizeB);
+
+    const selSet=new Set(L.sel);
+    const mkCard=(v)=>({
+      ...v, plat:v.platform, code:platCode[v.platform],
+      collName: v.collectionId?collById[v.collectionId].name:null,
+      selected:selSet.has(v.id),
+      selBg: selSet.has(v.id)?'var(--accent)':'var(--surface-raised)',
+      selCheck: selSet.has(v.id)?IC.check():null,
+      favColor: v.favorite?'var(--accent)':'var(--text-muted)',
+      favIcon: v.favorite?IC.starFill():IC.star(),
+      onOpen:()=>this.setState({detailId:v.id}),
+      onToggleSel:(e)=>{ e && e.stopPropagation && e.stopPropagation(); this.toggleSel(v.id); },
+      onFav:(e)=>{ e && e.stopPropagation && e.stopPropagation(); this.toggleFav(v.id); },
+    });
+    const cards=list.map(mkCard);
+
+    const libTabs=[['Todo','all'],['Favoritos','favorites'],['Colecciones','collections'],['Papelera','trash']].map(([label,val])=>({label,val,active:L.tab===val,color:L.tab===val?'var(--text)':'var(--text-muted)',onClick:()=>this.setLib({tab:val,sel:[]})}));
+
+    const filterDefs=[
+      {key:'platform',name:'Plataforma',options:PLATFORMS},
+      {key:'format',name:'Formato',options:['MP4','MP3','M4A']},
+      {key:'quality',name:'Calidad',options:['2160p','1440p','1080p','720p','480p','Audio']},
+      {key:'date',name:'Fecha',options:['Hoy','Esta semana','Este mes','Este año']},
+    ];
+    const filterChips=filterDefs.map(fd=>({
+      key:fd.key, label: L.filters[fd.key]||fd.name,
+      active: !!L.filters[fd.key],
+      color: L.filters[fd.key]?'var(--text)':'var(--text-muted)',
+      bg: L.filters[fd.key]?'var(--surface-raised)':'var(--surface)',
+      open: L.openFilter===fd.key,
+      onClick:()=>this.setLib({openFilter: L.openFilter===fd.key?null:fd.key}),
+      options: fd.options.map(o=>({label:o, color:L.filters[fd.key]===o?'var(--text)':'var(--text-muted)', selBg:L.filters[fd.key]===o?'var(--surface-pressed)':'transparent', onClick:()=>this.setLib({filters:{...L.filters,[fd.key]:L.filters[fd.key]===o?null:o}, openFilter:null})})),
+    }));
+
+    const sortLabels={recent:'Recientes',title:'Título',size:'Tamaño'};
+
+    const cols=s.collections.map(c=>({
+      ...c, count: s.videos.filter(v=>v.collectionId===c.id).length,
+      dateLabel:'actualizada hace '+(c.days<7?c.days+' días':Math.round(c.days/7)+' sem'),
+      thumbs:[0,1,2,3],
+      onOpen:()=>this.setLib({tab:'all', filters:{...L.filters}, search:''}),
+    }));
+
+    const detail = s.detailId ? s.videos.find(v=>v.id===s.detailId) : null;
+    const detailVM = detail ? {
+      ...detail, code:platCode[detail.platform],
+      collName: detail.collectionId?collById[detail.collectionId].name:'Sin colección',
+      favIcon: detail.favorite?IC.starFill():IC.star(),
+      favColor: detail.favorite?'var(--accent)':'var(--text-muted)',
+      onFav:()=>this.toggleFav(detail.id),
+      history:[{q:detail.format, when:detail.dateLabel},{q:'720p MP4', when:'primer intento · hace 2 meses'}],
+    } : null;
+
+    const showItems = L.tab==='all'||L.tab==='favorites';
+    const emptyTitle = L.search||L.filters.platform||L.filters.format||L.filters.quality||L.filters.date ? 'Sin resultados' : (L.tab==='favorites'?'Aún no hay favoritos':'La biblioteca está vacía');
+    const emptySub = L.search||L.filters.platform ? 'Prueba con otros filtros o términos de búsqueda.' : (L.tab==='favorites'?'Marca videos con la estrella para verlos aquí.':'Descarga tu primer video para empezar a archivar.');
+    return {
+      libTabs, libView:L.view,
+      libShowToolbar:showItems, libShowItems:showItems,
+      showGrid:showItems && L.view==='grid', showList:showItems && L.view==='list',
+      emptyTitle, emptySub, iconChevDown:IC.chevronDown(),
+      createCollection:()=>this.toast('Colección creada'),
+      libGrid:L.view==='grid', libList:L.view==='list',
+      setGridView:()=>this.setLib({view:'grid'}), setListView:()=>this.setLib({view:'list'}),
+      gridColor:L.view==='grid'?'var(--text)':'var(--text-muted)', listColor:L.view==='list'?'var(--text)':'var(--text-muted)',
+      gridBg:L.view==='grid'?'var(--surface-raised)':'transparent', listBg:L.view==='list'?'var(--surface-raised)':'transparent',
+      libSearch:L.search, setLibSearch:(e)=>this.setLib({search:e.target.value}),
+      libSort:L.sort, sortLabel:sortLabels[L.sort], setLibSort:(e)=>this.setLib({sort:e.target.value}),
+      filterChips,
+      libIsAll:L.tab==='all', libIsFav:L.tab==='favorites', libIsCollections:L.tab==='collections', libIsTrash:L.tab==='trash',
+      cards, cardCount:cards.length, cardsEmpty:cards.length===0,
+      cols, collectionsEmpty:s.collections.length===0,
+      trashItems:s.trash.map(t=>({...t, onRestore:()=>this.restoreItem(t.id)})), trashEmpty:s.trash.length===0,
+      restoreItem:(id)=>{ this.setState(st=>({trash:st.trash.filter(t=>t.id!==id)})); this.toast('Restaurado'); },
+      emptyTrash:()=>{ this.setState({trash:[]}); this.toast('Papelera vacía'); },
+      iconStar:IC.star(), iconGrid:IC.grid(), iconList:IC.list(), iconFolder:IC.folder(), iconTrash:IC.trash(),
+      iconMore:IC.more(), iconCopy:IC.copy(), iconDownload:IC.download(), iconPlusSm:IC.plus(), iconClose:IC.x(),
+      iconFilm:IC.film(),
+      // selection
+      selCount:L.sel.length, hasSel:L.sel.length>0,
+      clearSel:()=>this.setLib({sel:[]}),
+      favSel:()=>{ this.setState(st=>({videos:st.videos.map(v=>L.sel.includes(v.id)?{...v,favorite:true}:v)})); this.setLib({sel:[]}); this.toast('Marcados como favoritos'); },
+      deleteSel:()=>{ this.setLib({sel:[]}); this.toast(L.sel.length+' movidos a la papelera'); },
+      moveSel:()=>{ this.setLib({sel:[]}); this.toast('Movidos a colección'); },
+      redownloadSel:()=>{ this.setLib({sel:[]}); this.toast('Descargando de nuevo'); },
+      // detail
+      detail:detailVM, detailOpen:!!detailVM, closeDetail:()=>this.setState({detailId:null}),
+      copyUrl:()=>this.toast('URL copiada'),
+      closeLibOverlay:()=>this.setLib({openFilter:null}),
+      libOverlayOpen:!!L.openFilter,
+    };
+  }
+
+  setProfile(k,v){ this.setState(s=>({profile:{...s.profile,[k]:v}, profileDirty:true})); }
+  setPref(k,v){ this.setState(s=>({prefs:{...s.prefs,[k]:v}})); }
+  toggleNotif(ev,ch){ this.setState(s=>({notif:{...s.notif,[ev]:{...s.notif[ev],[ch]:!s.notif[ev][ch]}}})); }
+
+  setHome(patch){ this.setState(s=>({home:{...s.home, ...patch}})); }
+  analyzeHome(){
+    const H=this.state.home; const url=H.url.trim();
+    if(!url){ this.setHome({result:null}); return; }
+    const plat=this.detectPlatform(url)||'YouTube';
+    this.setHome({analyzing:true,result:null});
+    setTimeout(()=>this.setHome({analyzing:false,result:{title:'Cómo funciona la compresión de video moderna, explicado a fondo',author:'Estudio Norte',duration:'12:04',platform:plat,views:'1.2M'}}), 1200);
+  }
+  homeVals(){
+    const s=this.state, H=s.home;
+    const det=this.detectPlatform(H.url);
+    const platformStripH=PLATFORMS.map(p=>({label:p,opacity:!det?0.55:(det===p?1:0.25),color:det===p?'var(--text)':'var(--text-muted)'}));
+    const steps=[
+      {n:'01',title:'Pega el enlace',desc:'De YouTube, Instagram, TikTok, X, Facebook o Reddit.'},
+      {n:'02',title:'Elige calidad',desc:'Desde 4K hasta solo audio. Ves el peso antes de bajar.'},
+      {n:'03',title:'Guárdalo',desc:'En tu biblioteca, con colecciones, etiquetas y notas.'},
+    ];
+    const formats=[
+      {q:'2160p',d:'4K · MP4'},{q:'1440p',d:'2K · MP4'},{q:'1080p',d:'Full HD · MP4'},
+      {q:'720p',d:'HD · MP4'},{q:'MP3',d:'Audio'},{q:'M4A',d:'Audio'},
+    ];
+    const plansH=[
+      {name:'Free',price:'$0',feats:['3 descargas al día','720p máximo','Sin biblioteca'],cta:'Empezar',hi:false},
+      {name:'Pro',price:'$12',feats:['Descargas ilimitadas','Hasta 4K','200 GB de biblioteca','Colecciones y etiquetas'],cta:'Elegir Pro',hi:true},
+      {name:'Studio',price:'$29',feats:['Todo de Pro','1 TB de biblioteca','Modo lote','Acceso a la API'],cta:'Elegir Studio',hi:false},
+    ].map(p=>({...p, bg:p.hi?'var(--surface-raised)':'var(--surface)', ctaBg:p.hi?'var(--accent)':'var(--surface-raised)', ctaFg:p.hi?'#0F0F0F':'var(--text)'}));
+    const faqs=[
+      {q:'¿Necesito una cuenta para descargar?',a:'No para probar. Los invitados tienen tres descargas; con una cuenta son ilimitadas y se guardan en tu biblioteca.'},
+      {q:'¿Qué plataformas admite?',a:'YouTube, Instagram, TikTok, X, Facebook y Reddit. Pega el enlace y detectamos la fuente.'},
+      {q:'¿Puedo bajar solo el audio?',a:'Sí. Elige MP3 o M4A en el selector de calidad y descargamos únicamente la pista de audio.'},
+      {q:'¿Dónde se guardan mis descargas?',a:'En tu biblioteca personal, organizadas por colecciones, con notas y etiquetas propias.'},
+    ].map((f,i)=>({...f, open:H.faqOpen===i, chevron: H.faqOpen===i?IC.chevronDown():IC.chevronRight(), onClick:()=>this.setHome({faqOpen:H.faqOpen===i?-1:i})}));
+
+    return {
+      homeUrl:H.url, setHomeUrl:(e)=>this.setHome({url:e.target.value}),
+      analyzeHome:()=>this.analyzeHome(), homeAnalyzing:H.analyzing, homeResult:H.result,
+      platformStripH, homeSteps:steps, homeFormats:formats, plansH, faqs,
+      guestLeft:H.guestLeft, guestWall:H.result && H.guestLeft<=0, homeCanDownload:H.result && H.guestLeft>0,
+      homeDownload:()=>{ if(H.guestLeft>0){ this.setHome({guestLeft:H.guestLeft-1}); this.toast('Descarga iniciada · quedan '+(H.guestLeft-1)); } },
+      guestLabel: H.guestLeft>0 ? ('Te quedan '+H.guestLeft+' descargas de invitado') : 'Sin descargas de invitado',
+    };
+  }
+
+  settingsVals(){
+    const s=this.state, P=s.profile, PR=s.prefs;
+    const tabs=[['Perfil','profile'],['Preferencias','preferences'],['Seguridad','security'],['Plan','plan'],['Notificaciones','notifications'],['Datos','data']]
+      .map(([label,val])=>({label,val,active:s.setTab===val,color:s.setTab===val?'var(--text)':'var(--text-muted)',onClick:()=>this.setState({setTab:val})}));
+
+    const initials = P.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+    const nameOk = P.username.length>=3;
+    const themeSeg2=[['Claro','light'],['Oscuro','dark'],['Sistema','system']].map(([label,val])=>({label,onClick:()=>this.setTheme(val),color:s.theme===val?'#0F0F0F':'var(--text-muted)',bg:s.theme===val?'var(--accent)':'transparent'}));
+
+    const qualitySeg=['2160p','1440p','1080p','720p','480p'].map(q=>({label:q,onClick:()=>this.setPref('quality',q),bg:PR.quality===q?'var(--accent)':'var(--surface-raised)',fg:PR.quality===q?'#0F0F0F':'var(--text)'}));
+    const formatSeg=['MP4','MP3','M4A'].map(fo=>({label:fo,onClick:()=>this.setPref('format',fo),bg:PR.format===fo?'var(--accent)':'var(--surface-raised)',fg:PR.format===fo?'#0F0F0F':'var(--text)'}));
+    const filenamePreview = PR.filename.replace('{titulo}','como-funciona-la-compresion').replace('{calidad}',PR.quality).replace('{plataforma}','youtube').replace('{fecha}','2026-07-23') + (PR.format==='MP4'?'.mp4':PR.format==='MP3'?'.mp3':'.m4a');
+
+    const notifRows=[
+      {key:'done',label:'Descarga completada'},
+      {key:'error',label:'Error de descarga'},
+      {key:'features',label:'Nuevas funciones'},
+      {key:'weekly',label:'Resumen semanal'},
+      {key:'billing',label:'Facturación y recibos'},
+    ].map(r=>({ label:r.label, chans:['email','push','app'].map(ch=>({ on:s.notif[r.key][ch], trackBg:s.notif[r.key][ch]?'var(--accent)':'var(--surface-pressed)', thumbX:s.notif[r.key][ch]?'18px':'2px', thumbBg:s.notif[r.key][ch]?'#0F0F0F':'var(--text-muted)', onToggle:()=>this.toggleNotif(r.key,ch) })) }));
+
+    const sessions=s.sessions.map(x=>({...x, revokable:!x.current, onRevoke:()=>{ this.setState(st=>({sessions:st.sessions.filter(y=>y.id!==x.id)})); this.toast('Sesión cerrada'); }}));
+
+    const plans=[
+      {name:'Free',price:'$0',feats:['3 descargas al día','720p máximo','Sin biblioteca'],current:false,cta:'Actual'},
+      {name:'Pro',price:'$12',feats:['Ilimitado','Hasta 4K','200 GB de biblioteca','Colecciones'],current:true,cta:'Tu plan'},
+      {name:'Studio',price:'$29',feats:['Todo de Pro','1 TB de biblioteca','Descargas en lote','API'],current:false,cta:'Mejorar'},
+    ].map(p=>({...p, bg:p.current?'var(--surface-raised)':'var(--surface)', ctaBg:p.current?'var(--surface-pressed)':'var(--accent)', ctaFg:p.current?'var(--text-muted)':'#0F0F0F'}));
+
+    return {
+      setTabs:tabs,
+      setIsProfile:s.setTab==='profile', setIsPrefs:s.setTab==='preferences', setIsSecurity:s.setTab==='security',
+      setIsPlan:s.setTab==='plan', setIsNotif:s.setTab==='notifications', setIsData:s.setTab==='data',
+      P, profileInitials:initials, profileHasAvatar:P.hasAvatar,
+      profileStats:[
+        {label:'Descargas totales', value:'1,284'},
+        {label:'Almacenamiento', value:'42 GB', sub:'de 200 GB'},
+        {label:'Colecciones', value:'3'},
+        {label:'Miembro desde', value:'Mar 2025'},
+      ],
+      storageBars:[
+        {label:'Video', value:'31 GB', pct:'74%', color:'var(--accent)'},
+        {label:'Audio', value:'8 GB', pct:'19%', color:'var(--text-muted)'},
+        {label:'Otros', value:'3 GB', pct:'7%', color:'var(--text-faint)'},
+      ],
+      planUsage:[
+        {label:'Descargas este mes', value:'318', sub:'ilimitadas en Pro'},
+        {label:'Ancho de banda', value:'128 GB', sub:'este ciclo'},
+        {label:'Renueva', value:'01 ago', sub:'2026'},
+      ],
+      addons:[
+        {name:'Almacenamiento extra', desc:'+500 GB de biblioteca', price:'$5/mes'},
+        {name:'Descargas en lote', desc:'Cola ilimitada y prioridad', price:'$4/mes'},
+      ],
+      setPName:(e)=>this.setProfile('name',e.target.value),
+      setPUser:(e)=>this.setProfile('username',e.target.value),
+      setPEmail:(e)=>this.setProfile('email',e.target.value),
+      setPBio:(e)=>this.setProfile('bio',e.target.value),
+      usernameStatus: nameOk?'Disponible':'Muy corto', usernameColor: nameOk?'var(--success)':'var(--warning)',
+      changePhoto:()=>this.setState({modal:'crop'}),
+      removePhoto:()=>this.setState(st=>({profile:{...st.profile,hasAvatar:false},profileDirty:true})),
+      profileDirty:s.profileDirty,
+      saveProfile:()=>{ this.setState({profileDirty:false}); this.toast('Cambios guardados'); },
+      discardProfile:()=>this.setState({profileDirty:false}),
+      PR, themeSeg2, qualitySeg, formatSeg, filenamePreview,
+      setLang:(e)=>this.setPref('language',e.target.value),
+      setTz:(e)=>this.setPref('timezone',e.target.value),
+      setFilename:(e)=>this.setPref('filename',e.target.value),
+      setConc:(e)=>this.setPref('concurrency',e.target.value),
+      setAutoTrash:(e)=>this.setPref('autoTrash',e.target.value),
+      notifRows, sessions, plans, invoices:s.invoices,
+      twofa:s.twofa, twofaTrackBg:s.twofa?'var(--accent)':'var(--surface-pressed)', twofaThumbX:s.twofa?'18px':'2px', twofaThumbBg:s.twofa?'#0F0F0F':'var(--text-muted)',
+      toggle2fa:()=>{ if(!s.twofa){ this.setState({modal:'twofa'}); } else { this.setState({twofa:false}); this.toast('2FA desactivado'); } },
+      openDelete:()=>this.setState({modal:'delete',deleteConfirm:''}),
+      exportData:(fmt)=>this.toast('Exportando '+fmt),
+      modal:s.modal, closeModal:()=>this.setState({modal:null}),
+      modalIsCrop:s.modal==='crop', modalIsTwofa:s.modal==='twofa', modalIsDelete:s.modal==='delete',
+      confirm2fa:()=>{ this.setState({twofa:true,modal:null}); this.toast('2FA activado'); },
+      deleteConfirm:s.deleteConfirm, setDeleteConfirm:(e)=>this.setState({deleteConfirm:e.target.value}),
+      deleteEnabled:s.deleteConfirm===s.profile.name,
+      deleteBtnBg:s.deleteConfirm===s.profile.name?'var(--warning)':'var(--surface-pressed)',
+      deleteBtnFg:s.deleteConfirm===s.profile.name?'#0F0F0F':'var(--text-faint)',
+      confirmDelete:()=>{ this.setState({modal:null,authed:false,route:'login'}); },
+      cropZoom:120, applyCrop:()=>{ this.setState(st=>({profile:{...st.profile,hasAvatar:true},profileDirty:true,modal:null})); this.toast('Foto actualizada'); },
+      iconCamera:IC.camera(), iconShield:IC.shield(), iconMonitorSm:IC.monitorSm(),
+      stop:(e)=>{ e && e.stopPropagation && e.stopPropagation(); },
+      qrCells: Array.from({length:49},(_,i)=>{ const corner = (i<3||(i>6&&i<10&&false)); const pat=[0,1,2,7,8,9,14,15,16,4,5,6,11,12,13,42,43,44,45,46,47,48,21,23,25,28,30,33,35,38,17,19,3,10,24,31,40]; return pat.includes(i)?'#0A0A0A':'transparent'; }),
+    };
+  }
+
+  toggleSel(id){ this.setState(s=>{ const sel=s.lib.sel.includes(id)?s.lib.sel.filter(x=>x!==id):[...s.lib.sel,id]; return {lib:{...s.lib,sel}}; }); }
+  toggleFav(id){ this.setState(s=>({videos:s.videos.map(v=>v.id===id?{...v,favorite:!v.favorite}:v)})); }
+  restoreItem(id){ this.setState(s=>({trash:s.trash.filter(t=>t.id!==id)})); this.toast('Restaurado'); }
+
+  renderVals(){
+    const s=this.state, f=s.f;
+    const authed=s.authed;
+    const acc=getComputedStyle(document.documentElement);
+    const user={ name:'Alex Rivera', plan:'Pro', initials:'AR', usageLabel:'42 / 200 GB', usagePct:'21%' };
+
+    // password strength
+    const pl=f.pass.length;
+    const score = pl===0?0: pl<6?1: pl<9?2: (/[0-9]/.test(f.pass)&&/[A-Z]/.test(f.pass))?4: 3;
+    const seg=(n)=> score>=n ? (score>=3?'var(--success)':score>=2?'var(--warning)':'var(--accent)') : 'var(--surface-pressed)';
+    const pw={ s1:seg(1),s2:seg(2),s3:seg(3),s4:seg(4), label:['—','Débil','Regular','Buena','Fuerte'][score] };
+
+    const pwReqs=[
+      {label:'Al menos 8 caracteres', ok:pl>=8},
+      {label:'Una mayúscula', ok:/[A-Z]/.test(f.pass)},
+      {label:'Un número', ok:/[0-9]/.test(f.pass)},
+      {label:'Un símbolo', ok:/[^A-Za-z0-9]/.test(f.pass)},
+    ].map(r=>({label:r.label, color:r.ok?'var(--success)':'var(--text-faint)', icon: r.ok?IC.check():svg(['M12 8v8M8 12h8'],18)}));
+
+    const codeCells=['4','1','7','','',''].map((v,i)=>({v, bg: i===3?'var(--surface-pressed)':'var(--surface)'}));
+
+    // decorative login rows
+    const decoRows=[
+      {w1:'70%',pct:'100%',pctLabel:'100%',code:'YT',barColor:'var(--surface-pressed)',anim:''},
+      {w1:'52%',pct:'64%',pctLabel:'64%',code:'IG',barColor:'var(--accent)',anim:'animation:gr-load 3.4s ease-in-out infinite;'},
+      {w1:'80%',pct:'28%',pctLabel:'28%',code:'TT',barColor:'var(--surface-pressed)',anim:''},
+    ];
+
+    // top tabs
+    const mk=(label,route,badge)=>({label,badge:badge||null,active:s.route===route, color:s.route===route?'var(--text)':'var(--text-muted)', onClick:()=>this.go(route)});
+    const activeQ=s.queue.filter(q=>q.status==='downloading'||q.status==='queued'||q.status==='paused').length;
+    const topTabs=[ mk('Descargar','download'), mk('Cola','queue', activeQ||null), mk('Biblioteca','library') ];
+
+    // theme segmented in popover
+    const themeSeg=[['Claro','light'],['Oscuro','dark'],['Sistema','system']].map(([label,val])=>({label, onClick:()=>this.setTheme(val), color:s.theme===val?'#0F0F0F':'var(--text-muted)', bg:s.theme===val?'var(--accent)':'transparent'}));
+
+    // platform strip (download)
+    const det=this.detectPlatform(s.url);
+    const platformStrip=PLATFORMS.map(p=>({label:p, opacity: !det?1: (det===p?1:0.32), color: det===p?'var(--text)':'var(--text-muted)'}));
+
+    // quality options
+    const sizes=this.qualitySizes();
+    const mkOpt=(id)=>({label:id.replace('Audio ',''), size:sizes[id], onSelect:()=>this.setState({quality:id}), bg:s.quality===id?'var(--accent)':'var(--surface-raised)', fg:s.quality===id?'#0F0F0F':'var(--text)'});
+    const qualityVideo=['2160p','1440p','1080p','720p','480p'].map(mkOpt);
+    const qualityAudio=['Audio MP3','Audio M4A'].map(id=>({...mkOpt(id), label: id}));
+
+    const dc=s.dlOpts;
+    const mkChk=(key,label)=>({label, bg:dc[key]?'var(--accent)':'var(--surface-raised)', check:dc[key]?IC.check():null, onToggle:()=>this.setState(st=>({dlOpts:{...st.dlOpts,[key]:!st.dlOpts[key]}}))});
+    const dlChecks=[mkChk('subs','Subtítulos'),mkChk('thumb','Miniatura'),mkChk('collection','Guardar en colección')];
+
+    // queue rows
+    const fmtEta=(x)=> x<=0?'—': x<60?x+'s':Math.floor(x/60)+'m '+(x%60)+'s';
+    const statusMap={downloading:'Descargando',queued:'En cola',paused:'En pausa',error:'Error',done:'Completado'};
+    const mkRow=(q)=>({
+      ...q, pctLabel: Math.round(q.pct)+'%', eta: q.status==='error'?'—':fmtEta(q.etaS),
+      statusLabel: q.status==='error'?'El video ya no está disponible':statusMap[q.status],
+      barColor: q.status==='error'?'var(--warning)': q.status==='paused'?'var(--text-faint)':'var(--accent)',
+      toggleIcon: q.status==='paused'?IC.play():IC.pause(),
+      onToggle:()=>this.setState(st=>({queue:st.queue.map(x=>x.id===q.id?{...x,status:x.status==='paused'?'downloading':'paused',speed:x.status==='paused'?'6.0 MB/s':'—'}:x)})),
+      onCancel:()=>this.setState(st=>({queue:st.queue.filter(x=>x.id!==q.id)})),
+    });
+    const active=s.queue.filter(q=>q.status!=='done');
+    const done=s.queue.filter(q=>q.status==='done');
+    const activeRows=active.map(mkRow);
+    const doneRows=done.map(q=>({...q}));
+
+    const dd = {
+      conc: this.mkDD('conc', s.concurrency, ['1','2','3','5'], v=>this.setState({concurrency:v})),
+      sort: this.mkDD('sort', s.lib.sort, [{value:'recent',label:'Recientes'},{value:'title',label:'Título'},{value:'size',label:'Tamaño'}], v=>this.setLib({sort:v})),
+      lang: this.mkDD('lang', s.prefs.language, ['Español','English','Português'], v=>this.setPref('language',v)),
+      tz: this.mkDD('tz', s.prefs.timezone, ['GMT−6 · Ciudad de México','GMT−5 · Bogotá','GMT−3 · Buenos Aires','GMT+1 · Madrid'], v=>this.setPref('timezone',v)),
+      prefConc: this.mkDD('prefConc', s.prefs.concurrency, ['1','2','3','5'], v=>this.setPref('concurrency',v)),
+      trash: this.mkDD('trash', s.prefs.autoTrash, ['7 días','30 días','90 días','Nunca'], v=>this.setPref('autoTrash',v)),
+    };
+    return {
+      ...this.libVals(),
+      ...this.settingsVals(),
+      ...this.homeVals(),
+      // routing
+      authed, notAuthed:!authed,
+      isLogin:s.route==='login', isSignup:s.route==='signup', isVerify:s.route==='verify',
+      isForgot:s.route==='forgot', isReset:s.route==='reset', isHome:s.route==='home',
+      isDownload:s.route==='download', isQueue:s.route==='queue', isLibrary:s.route==='library', isSettings:s.route==='settings',
+      dd, ddOpen:!!s.openDropdown, closeDropdown:()=>this.setState({openDropdown:null}),
+      dlIdle: !s.result && !s.analyzing,
+      dlSteps:[
+        {icon:IC.link(), title:'Pega el enlace', desc:'Copia la URL desde la app o el navegador y pégala arriba.'},
+        {icon:IC.grid(), title:'Elige calidad', desc:'Desde 4K hasta solo audio. Ves el peso antes de bajar.'},
+        {icon:IC.download(), title:'Guárdalo', desc:'Va a tu cola y luego a la biblioteca, con notas y etiquetas.'},
+      ],
+      dlRecent: s.videos.slice(0,4).map(v=>({title:v.title, plat:v.platform, duration:v.duration, meta:v.format+' · '+v.size})),
+      user,
+      f,
+      // auth handlers
+      setEmail:(e)=>this.setState({f:{...f,email:e.target.value}}),
+      setPass:(e)=>this.setState({f:{...f,pass:e.target.value}}),
+      setName:(e)=>this.setState({f:{...f,name:e.target.value}}),
+      passType:s.showPass?'text':'password',
+      eyeIcon: s.showPass?IC.eyeOff():IC.eye(),
+      togglePass:()=>this.setState({showPass:!s.showPass}),
+      remember:s.remember, rememberBg:s.remember?'var(--accent)':'var(--surface-pressed)', rememberCheck:s.remember?IC.check():null, toggleRemember:()=>this.setState({remember:!s.remember}),
+      terms:s.terms, termsBg:s.terms?'var(--accent)':'var(--surface-pressed)', termsCheck:s.terms?IC.check():null, toggleTerms:()=>this.setState({terms:!s.terms}),
+      pw, pwReqs, codeCells, resendIn:42, decoRows,
+      doLogin:()=>{ this.setState({authed:true, route:'download'}); window.scrollTo(0,0); },
+      doSignup:()=>this.go('verify'),
+      doVerify:()=>{ this.setState({authed:true, route:'download'}); window.scrollTo(0,0); },
+      doLogout:()=>this.setState({authed:false, route:'login', avatarOpen:false}),
+      nav:{ login:()=>this.go('login'), signup:()=>this.go('signup'), verify:()=>this.go('verify'), forgot:()=>this.go('forgot'), reset:()=>this.go('reset'), home:()=>this.go('home'), download:()=>this.go('download'), queue:()=>this.go('queue'), library:()=>this.go('library'), settings:()=>this.go('settings') },
+      // topbar
+      topTabs,
+      searchWidth: s.searchExpanded?'260px':'150px',
+      focusSearch:()=>{ this.setState({searchExpanded:true}); const el=document.querySelector('input[placeholder="Buscar"]'); if(el) el.focus(); },
+      expandSearch:()=>this.setState({searchExpanded:true}),
+      collapseSearch:()=>{ if(!s.q.global) this.setState({searchExpanded:false}); },
+      setGlobalSearch:(e)=>this.setState({q:{...s.q,global:e.target.value}}),
+      iconSearch:IC.search(), iconBell:IC.bell(), iconUser:IC.user(), iconGear:IC.gear(), iconHelp:IC.help(), iconLogout:IC.logout(),
+      iconLink:IC.link(), iconClip:IC.clip(), iconX:IC.x(), iconCheck:IC.check(), iconInboxLg:IC.inbox(),
+      themeIcon: s.theme==='light'?IC.sun(): s.theme==='dark'?IC.moon():IC.monitor(),
+      notifOpen:s.notifOpen,
+      notifItems:[
+        {title:'«Documental — parte 1» terminó de descargarse',time:'hace 2 min',dot:'var(--success)'},
+        {title:'«Este video ya no está disponible» falló',time:'hace 8 min',dot:'var(--warning)'},
+        {title:'Tu resumen semanal está listo',time:'ayer',dot:'var(--text-faint)'},
+      ],
+      toggleNotif:()=>this.setState({notifOpen:!s.notifOpen, avatarOpen:false}),
+      toggleAvatar:()=>this.setState({avatarOpen:!s.avatarOpen, notifOpen:false}),
+      avatarOpen:s.avatarOpen, closeOverlays:()=>this.setState({avatarOpen:false,notifOpen:false}),
+      themeSeg,
+      goSettings:()=>this.go('settings'), goSettingsProfile:()=>this.go('settings'),
+      // download
+      url:s.url, setUrl:(e)=>this.setState({url:e.target.value, dlError:''}),
+      batchMode:s.batchMode, singleMode:!s.batchMode, toggleBatch:()=>this.setState({batchMode:!s.batchMode, result:null}),
+      batchTrackBg:s.batchMode?'var(--accent)':'var(--surface-pressed)', batchThumbX:s.batchMode?'18px':'2px', batchThumbBg:s.batchMode?'#0F0F0F':'var(--text-muted)',
+      batchCount: s.url.split('\n').filter(l=>l.trim()).length,
+      showClip:s.showClip && !s.url, pasteClip:()=>this.setState({url:'https://youtube.com/watch?v=demo', showClip:false}),
+      platformStrip, analyzing:s.analyzing, result:s.result, dlError:s.dlError, analyze:()=>this.analyze(),
+      qualityVideo, qualityAudio, dlChecks,
+      downloadResult:()=>{ this.addToQueue(); this.toast('Descarga iniciada', 'Ver cola', ()=>this.go('queue')); },
+      queueResult:()=>{ this.addToQueue(); this.toast('Añadido a la cola', 'Ver cola', ()=>this.go('queue')); },
+      // queue
+      activeRows, doneRows, hasActive:active.length>0, queueEmpty:active.length===0 && done.length===0,
+      hasDone:done.length>0, doneExpanded:s.doneExpanded, toggleDoneGroup:()=>this.setState({doneExpanded:!s.doneExpanded}),
+      doneChevron: s.doneExpanded?IC.chevronDown():IC.chevronRight(),
+      activeCount:active.filter(q=>q.status!=='error').length, doneCount:done.length,
+      concurrency:s.concurrency, setConcurrency:(e)=>this.setState({concurrency:e.target.value}),
+      pauseAll:()=>{ this.setState(st=>({queue:st.queue.map(q=>q.status==='downloading'?{...q,status:'paused',speed:'—'}:q)})); },
+      clearDone:()=>this.setState(st=>({queue:st.queue.filter(q=>q.status!=='done')})),
+      // toasts
+      toasts:s.toasts,
+    };
+  }
+}
+</script>
+</body>
+</html>
