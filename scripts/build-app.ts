@@ -295,6 +295,130 @@ html.gr-theming, html.gr-theming *{transition:background-color .4s ease,color .4
 /* Popovers (cuenta / notificaciones): entran deslizando un pelo desde arriba */
 .gr-pop{animation:gr-pop-in .26s cubic-bezier(.16,1,.3,1) both;}
 
+/* ——————————————————— SKELETON DE ARRANQUE ———————————————————
+   Reproduce la FORMA de la app (barra, título, filtros, rejilla) mientras se
+   resuelve la sesión: al llegar el contenido no hay salto, solo sustitución.
+   El brillo es una capa que se desplaza con translateX (GPU, sin repintar) y
+   va en linear porque es movimiento constante, no una entrada. */
+.gr-sk-b{position:relative;overflow:hidden;background:var(--surface);border-radius:10px;}
+.gr-sk-b::after{content:"";position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);
+  animation:gr-sweep 1.4s linear infinite;}
+@keyframes gr-sweep{to{transform:translateX(100%);}}
+/* escalonado corto: las tarjetas se "encienden" una tras otra, no todas a la vez */
+.gr-sk-card:nth-child(2) .gr-sk-b::after{animation-delay:.08s;}
+.gr-sk-card:nth-child(3) .gr-sk-b::after{animation-delay:.16s;}
+.gr-sk-card:nth-child(4) .gr-sk-b::after{animation-delay:.24s;}
+.gr-sk-card:nth-child(5) .gr-sk-b::after{animation-delay:.32s;}
+.gr-sk-card:nth-child(6) .gr-sk-b::after{animation-delay:.4s;}
+/* el bloque grande de cada tarjeta insinúa la miniatura 16:9 */
+.gr-sk-thumb{aspect-ratio:16/9;border-radius:12px;margin-bottom:11px;}
+.gr-sk-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+/* fila de la Cola: miniatura + texto + barra de progreso */
+.gr-sk-row{display:flex;align-items:center;gap:14px;background:var(--surface);border-radius:14px;padding:12px 14px;}
+.gr-sk-row .gr-sk-b{background:var(--surface-raised);}
+/* Ajustes: navegación lateral + panel */
+.gr-sk-set{display:grid;grid-template-columns:210px 1fr;gap:18px;}
+@media (max-width:900px){ .gr-sk-set{grid-template-columns:1fr;} }
+@media (max-width:980px){ .gr-sk-grid{grid-template-columns:repeat(2,1fr);} }
+@media (max-width:640px){
+  .gr-sk-grid{grid-template-columns:1fr;gap:14px;}
+  .gr-sk-bar{padding:0 16px !important;height:50px !important;}
+  .gr-sk-body{padding:18px 16px !important;}
+  .gr-sk-hide{display:none !important;}
+}
+/* con movimiento reducido: bloques quietos, sin barrido */
+@media (prefers-reduced-motion:reduce){ .gr-sk-b::after{display:none;} }
+
+/* ——— Reproductor propio ——— */
+.gr-player{animation:gr-fade .3s cubic-bezier(.16,1,.3,1) backwards;}
+.gr-pl-stage{position:relative;background:#000;line-height:0;}
+/* capa para pausar/reanudar tocando el vídeo */
+.gr-pl-tap{position:absolute;inset:0;background:transparent;cursor:pointer;}
+/* botón central: solo cuando está en pausa */
+.gr-pl-center{position:absolute;top:50%;left:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:999px;
+  background:rgba(10,10,10,.55);color:#fff;display:flex;align-items:center;justify-content:center;pointer-events:none;
+  opacity:0;transition:opacity .18s ease;}
+.gr-pl-stage[data-paused="1"] .gr-pl-center{opacity:1;}
+/* barra de controles: se oculta sola mientras se reproduce y no hay ratón */
+.gr-pl-ctl{position:absolute;left:0;right:0;bottom:0;padding:26px 14px 12px;
+  background:linear-gradient(to top,rgba(0,0,0,.82) 0%,rgba(0,0,0,.45) 55%,transparent 100%);
+  line-height:normal;opacity:1;transition:opacity .22s ease;}
+.gr-pl-stage[data-idle="1"] .gr-pl-ctl{opacity:0;pointer-events:none;}
+.gr-pl-stage[data-idle="1"] .gr-pl-tap{cursor:none;}
+/* PANTALLA COMPLETA: el vídeo lleva max-height:72vh en línea para el modo
+   ventana; en pantalla completa hay que anularlo (con !important, porque el
+   estilo en línea manda) o se queda pequeño con franjas negras enormes.
+   Las dos variantes van en reglas SEPARADAS a propósito: si un navegador no
+   conoce una de las pseudoclases, invalidaría toda la lista de selectores. */
+.gr-pl-stage:fullscreen{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;}
+.gr-pl-stage:fullscreen .gr-player-video{width:100% !important;height:100% !important;max-height:none !important;object-fit:contain;}
+.gr-pl-stage:-webkit-full-screen{width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;}
+.gr-pl-stage:-webkit-full-screen .gr-player-video{width:100% !important;height:100% !important;max-height:none !important;object-fit:contain;}
+.gr-pl-row{display:flex;align-items:center;gap:10px;margin-top:6px;}
+.gr-pl-sp{flex:1;}
+.gr-pl-btn{width:34px;height:34px;border-radius:9px;color:#fff;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:background .16s;}
+.gr-pl-btn:hover{background:rgba(255,255,255,.14);}
+.gr-pl-time{font-size:12.5px;color:#D6D2CE;font-variant-numeric:tabular-nums;white-space:nowrap;}
+/* Barras (posición y volumen): pista fina, tirador redondo grande y relleno
+   rosa. Se pintan con un degradado que se actualiza por JS, así el relleno
+   funciona igual en Chrome y Firefox. */
+.gr-pl-seek,.gr-pl-vol{-webkit-appearance:none;appearance:none;height:4px;border-radius:999px;background:rgba(255,255,255,.26);cursor:pointer;}
+.gr-pl-seek{width:100%;display:block;}
+.gr-pl-seek::-webkit-slider-thumb,.gr-pl-vol::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:999px;background:var(--accent);border:0;box-shadow:0 0 0 4px rgba(250,5,160,.18);}
+.gr-pl-seek::-moz-range-thumb,.gr-pl-vol::-moz-range-thumb{width:13px;height:13px;border-radius:999px;background:var(--accent);border:0;}
+/* volumen SIEMPRE visible en escritorio (el nativo obliga a apuntar a un
+   popup diminuto: eso era lo incómodo) */
+.gr-pl-volwrap{display:flex;align-items:center;gap:8px;}
+.gr-pl-vol{width:92px;}
+/* Play sobre la miniatura del PANEL DE DETALLE: oculto hasta pasar el ratón por
+   la miniatura; en táctil siempre visible (ahí no hay hover). Cubre toda la
+   miniatura con un velo para que se entienda que se puede pulsar. */
+.gr-detail-play{position:absolute;inset:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  /* velo en degradado (más denso abajo): se lee mejor que un gris plano y deja
+     ver la miniatura por arriba */
+  background:linear-gradient(to bottom,rgba(10,10,10,.20) 0%,rgba(10,10,10,.58) 100%);
+  color:#fff;opacity:0;transition:opacity .2s ease;cursor:pointer;}
+/* disco con aro fino: en reposo casi transparente con borde claro (más fino que
+   un círculo relleno); al apuntarlo se llena del rosa de la app */
+/* TODO EN UN SOLO SVG: el aro y el triángulo comparten el mismo lienzo, así que
+   el centro es exacto por construcción (antes el aro iba en position:absolute
+   sin coordenadas y no coincidía con el triángulo: de ahí el descuadre).
+   El triángulo está ópticamente centrado —desplazado ~1.5 a la derecha del
+   centro geométrico— porque un triángulo apuntando a la derecha parece corrido
+   a la izquierda si se centra por su caja. */
+.gr-detail-play .gr-playmark{width:68px;height:68px;overflow:visible;}
+.gr-detail-play .gr-pm-disc{fill:rgba(10,10,10,.42);transition:fill .22s ease;}
+.gr-detail-play .gr-pm-base{fill:none;stroke:rgba(255,255,255,.28);stroke-width:2;}
+/* el arco rosa se DIBUJA alrededor al pasar el ratón (207 ≈ 2·π·33) */
+.gr-detail-play .gr-pm-arc{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;
+  stroke-dasharray:207;stroke-dashoffset:207;transform:rotate(-90deg);transform-origin:50% 50%;
+  transition:stroke-dashoffset .55s cubic-bezier(.16,1,.3,1);}
+.gr-detail-play .gr-pm-tri{fill:var(--accent);stroke:var(--accent);stroke-width:3.2;stroke-linejoin:round;}
+.gr-detail-play:hover{opacity:1;}
+.gr-detail-play:hover .gr-pm-arc{stroke-dashoffset:0;}
+.gr-detail-play:hover .gr-pm-disc{fill:rgba(10,10,10,.62);}
+/* el anillo del navegador al pulsar es feo; con teclado sí se marca */
+.gr-detail-play:focus{outline:none;}
+.gr-detail-play:focus-visible{opacity:1;}
+.gr-detail-play:focus-visible::before{box-shadow:inset 0 0 0 1.5px var(--accent),0 0 0 3px rgba(250,5,160,.35);}
+@media (hover:none){ .gr-detail-play{opacity:1;background:linear-gradient(to bottom,rgba(10,10,10,.12) 0%,rgba(10,10,10,.45) 100%);} }
+
+@media (max-width:640px){
+  /* en el móvil ocupa el ancho completo y se pega arriba: así el vídeo queda a
+     la altura del pulgar */
+  .gr-player-ov{padding:0 !important;align-items:flex-start !important;}
+  .gr-player{max-width:100% !important;border-radius:0 !important;min-height:100dvh;display:flex;flex-direction:column;justify-content:center;}
+  .gr-player-head{padding:14px 16px !important;}
+  .gr-player-video{max-height:64vh !important;}
+  /* el volumen se controla con los botones físicos (iOS ni siquiera deja
+     cambiarlo por código): se deja solo silenciar, y los botones más grandes */
+  .gr-pl-vol{display:none;}
+  .gr-pl-btn{width:40px;height:40px;}
+  .gr-pl-ctl{padding:30px 12px 16px;}
+}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
 }
@@ -419,6 +543,85 @@ replaceOnce(
   '<span onClick="{{ openHelp }}" style="cursor:pointer;transition:color .16s;" style-hover="color:var(--accent);">Ayuda</span>' +
   '</div>',
   'login-footer',
+);
+
+// Mientras la biblioteca carga se muestra su skeleton (antes salía el mensaje
+// de "biblioteca vacía" y un instante después aparecían los vídeos).
+replaceOnce(
+  '            <sc-if value="{{ cardsEmpty }}" hint-placeholder-val="{{ false }}">',
+  `            <sc-if value="{{ libLoading }}" hint-placeholder-val="{{ false }}">
+              <div class="gr-sk-grid">
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:84%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:54%;border-radius:6px;"></div></div>
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:72%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:46%;border-radius:6px;"></div></div>
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:90%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:50%;border-radius:6px;"></div></div>
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:66%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:58%;border-radius:6px;"></div></div>
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:88%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:44%;border-radius:6px;"></div></div>
+                <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:76%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:60%;border-radius:6px;"></div></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ cardsEmpty }}" hint-placeholder-val="{{ false }}">`,
+  'biblioteca-cargando',
+);
+
+// Play sobre la MINIATURA DEL PANEL DE DETALLE (el de la derecha): al pasar el
+// ratón por encima aparece el botón y reproduce ahí mismo. La miniatura pasa a
+// ser el disparador, por eso ya no hay botón "Reproducir" suelto debajo.
+replaceOnce(
+  '<span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ detail.duration }}</span></div>',
+  '<span style="position:absolute;bottom:8px;right:8px;background:#0A0A0A;color:#F2F0ED;font-size:11px;font-weight:600;padding:2px 6px;border-radius:5px;">{{ detail.duration }}</span>' +
+  '<button onClick="{{ playDetail }}" aria-label="Reproducir" class="gr-detail-play">' +
+  '<svg class="gr-playmark" viewBox="0 0 72 72" aria-hidden="true">' +
+    '<circle class="gr-pm-disc" cx="36" cy="36" r="33"/>' +
+    '<circle class="gr-pm-base" cx="36" cy="36" r="33"/>' +
+    '<circle class="gr-pm-arc" cx="36" cy="36" r="33"/>' +
+    '<path class="gr-pm-tri" d="M28.4 24.8 L46.6 36 L28.4 47.2 Z"/>' +
+  '</svg>' +
+  '</button>' +
+  '</div>',
+  'play-miniatura-detalle',
+);
+
+// Reproductor integrado: capa a pantalla completa con el vídeo servido desde
+// el propio servidor. Se usan los controles NATIVOS a propósito: en el móvil
+// dan pantalla completa, PiP y gestos del sistema que unos controles propios
+// no igualarían. Lo que se estiliza es el marco (cabecera, fondo, bordes).
+replaceOnce(
+  '<!-- TOASTS -->',
+  `<sc-if value="{{ playerOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closePlayer }}" class="gr-player-ov" style="position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.78);display:flex;align-items:center;justify-content:center;padding:28px;animation:gr-fade .28s cubic-bezier(.16,1,.3,1) backwards;">
+    <div onClick="{{ stop }}" class="gr-player" style="width:100%;max-width:980px;background:var(--surface-raised);border-radius:18px;overflow:hidden;">
+      <div class="gr-player-head" style="display:flex;align-items:center;gap:14px;padding:14px 18px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:14px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ playerTitle }}</div>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:2px;">{{ playerMeta }}</div>
+        </div>
+        <button onClick="{{ closePlayer }}" aria-label="Cerrar" style="width:34px;height:34px;border-radius:10px;color:var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .16s,color .16s;" style-hover="background:var(--surface-pressed);color:var(--text);">{{ iconX }}</button>
+      </div>
+      <div class="gr-pl-stage" data-pl-stage>
+        <video data-gr-player src="{{ playerUrl }}" autoplay="autoplay" playsinline="playsinline" preload="metadata" class="gr-player-video" style="display:block;width:100%;max-height:72vh;background:#000;"></video>
+        <button data-pl-tap class="gr-pl-tap" aria-label="Reproducir o pausar"></button>
+        <div class="gr-pl-center" data-pl-center>
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="margin-left:3px;"><path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z"/></svg>
+        </div>
+        <div class="gr-pl-ctl" data-pl-ctl>
+          <input data-pl-seek class="gr-pl-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Posición del vídeo">
+          <div class="gr-pl-row">
+            <button data-pl-play class="gr-pl-btn" aria-label="Reproducir o pausar"></button>
+            <span data-pl-time class="gr-pl-time">0:00 / 0:00</span>
+            <div class="gr-pl-sp"></div>
+            <div class="gr-pl-volwrap">
+              <button data-pl-mute class="gr-pl-btn" aria-label="Silenciar"></button>
+              <input data-pl-vol class="gr-pl-vol" type="range" min="0" max="100" value="100" step="1" aria-label="Volumen">
+            </div>
+            <button data-pl-full class="gr-pl-btn" aria-label="Pantalla completa"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<!-- TOASTS -->`,
+  'reproductor',
 );
 
 // Buscador móvil: el grupo de acciones necesita una clase para poder darle
@@ -885,10 +1088,95 @@ replaceOnce(
 replaceOnce(
   '<sc-if value="{{ notAuthedNoPage }}" hint-placeholder-val="{{ true }}">',
   `<sc-if value="{{ booting }}" hint-placeholder-val="{{ true }}">
-  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
-      <div style="width:44px;height:44px;border-radius:13px;background:var(--accent);animation:gr-pulse 1.1s ease-in-out infinite;"></div>
-      <span style="font-size:14px;color:var(--text-muted);letter-spacing:.01em;">Cargando…</span>
+  <div style="min-height:100dvh;display:flex;flex-direction:column;background:var(--canvas);">
+    <div class="gr-sk-bar" style="height:58px;flex-shrink:0;display:flex;align-items:center;gap:12px;padding:0 40px;">
+      <div class="gr-sk-b" style="width:30px;height:30px;border-radius:9px;"></div>
+      <div class="gr-sk-b" style="width:84px;height:14px;border-radius:7px;"></div>
+      <div class="gr-sk-hide" style="width:22px;"></div>
+      <div class="gr-sk-b gr-sk-hide" style="width:72px;height:12px;border-radius:6px;"></div>
+      <div class="gr-sk-b gr-sk-hide" style="width:46px;height:12px;border-radius:6px;"></div>
+      <div class="gr-sk-b gr-sk-hide" style="width:74px;height:12px;border-radius:6px;"></div>
+      <div style="flex:1;"></div>
+      <div class="gr-sk-b gr-sk-hide" style="width:150px;height:34px;"></div>
+      <div class="gr-sk-b" style="width:34px;height:34px;"></div>
+      <div class="gr-sk-b" style="width:34px;height:34px;"></div>
+      <div class="gr-sk-b" style="width:28px;height:28px;border-radius:999px;"></div>
+    </div>
+    <div class="gr-sk-body" style="flex:1;width:100%;max-width:1720px;margin:0 auto;padding:26px 40px 40px;">
+      <sc-if value="{{ skIsLibrary }}" hint-placeholder-val="{{ true }}">
+        <div class="gr-sk-b" style="width:184px;height:28px;border-radius:9px;margin-bottom:18px;"></div>
+        <div style="display:flex;gap:18px;margin-bottom:18px;">
+          <div class="gr-sk-b" style="width:44px;height:13px;border-radius:6px;"></div>
+          <div class="gr-sk-b" style="width:70px;height:13px;border-radius:6px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:86px;height:13px;border-radius:6px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:64px;height:13px;border-radius:6px;"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+          <div class="gr-sk-b" style="width:220px;height:36px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:106px;height:36px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:96px;height:36px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:88px;height:36px;"></div>
+          <div class="gr-sk-b" style="width:84px;height:36px;"></div>
+        </div>
+        <div class="gr-sk-grid">
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:84%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:54%;border-radius:6px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:72%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:46%;border-radius:6px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:90%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:50%;border-radius:6px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:66%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:58%;border-radius:6px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:88%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:44%;border-radius:6px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b gr-sk-thumb"></div><div class="gr-sk-b" style="height:13px;width:76%;border-radius:6px;margin-bottom:8px;"></div><div class="gr-sk-b" style="height:11px;width:60%;border-radius:6px;"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ skIsDownload }}" hint-placeholder-val="{{ false }}">
+        <div style="max-width:640px;margin:0 auto;display:flex;flex-direction:column;align-items:center;">
+          <div class="gr-sk-b" style="width:216px;height:34px;border-radius:10px;margin:14px 0 18px;"></div>
+          <div class="gr-sk-b" style="width:152px;height:34px;border-radius:999px;margin-bottom:20px;"></div>
+          <div class="gr-sk-b" style="width:90%;height:12px;border-radius:6px;margin-bottom:9px;"></div>
+          <div class="gr-sk-b" style="width:62%;height:12px;border-radius:6px;margin-bottom:26px;"></div>
+          <div class="gr-sk-b" style="width:100%;height:64px;border-radius:16px;margin-bottom:18px;"></div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap;justify-content:center;">
+            <div class="gr-sk-b" style="width:152px;height:32px;border-radius:999px;"></div>
+            <div class="gr-sk-b" style="width:82px;height:32px;border-radius:999px;"></div>
+            <div class="gr-sk-b" style="width:88px;height:32px;border-radius:999px;"></div>
+            <div class="gr-sk-b" style="width:70px;height:32px;border-radius:999px;"></div>
+          </div>
+        </div>
+        <div class="gr-sk-grid" style="margin-top:34px;">
+          <div class="gr-sk-card"><div class="gr-sk-b" style="height:118px;border-radius:14px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b" style="height:118px;border-radius:14px;"></div></div>
+          <div class="gr-sk-card"><div class="gr-sk-b" style="height:118px;border-radius:14px;"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ skIsQueue }}" hint-placeholder-val="{{ false }}">
+        <div class="gr-sk-b" style="width:120px;height:28px;border-radius:9px;margin-bottom:18px;"></div>
+        <div style="display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;">
+          <div class="gr-sk-b" style="width:118px;height:34px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:150px;height:34px;"></div>
+          <div class="gr-sk-b gr-sk-hide" style="width:132px;height:34px;"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="gr-sk-card gr-sk-row"><div class="gr-sk-b" style="width:86px;height:52px;border-radius:10px;flex-shrink:0;"></div><div style="flex:1;min-width:0;"><div class="gr-sk-b" style="height:13px;width:58%;border-radius:6px;margin-bottom:9px;"></div><div class="gr-sk-b" style="height:8px;width:100%;border-radius:999px;"></div></div><div class="gr-sk-b gr-sk-hide" style="width:74px;height:30px;border-radius:9px;flex-shrink:0;"></div></div>
+          <div class="gr-sk-card gr-sk-row"><div class="gr-sk-b" style="width:86px;height:52px;border-radius:10px;flex-shrink:0;"></div><div style="flex:1;min-width:0;"><div class="gr-sk-b" style="height:13px;width:72%;border-radius:6px;margin-bottom:9px;"></div><div class="gr-sk-b" style="height:8px;width:100%;border-radius:999px;"></div></div><div class="gr-sk-b gr-sk-hide" style="width:74px;height:30px;border-radius:9px;flex-shrink:0;"></div></div>
+          <div class="gr-sk-card gr-sk-row"><div class="gr-sk-b" style="width:86px;height:52px;border-radius:10px;flex-shrink:0;"></div><div style="flex:1;min-width:0;"><div class="gr-sk-b" style="height:13px;width:44%;border-radius:6px;margin-bottom:9px;"></div><div class="gr-sk-b" style="height:8px;width:100%;border-radius:999px;"></div></div><div class="gr-sk-b gr-sk-hide" style="width:74px;height:30px;border-radius:9px;flex-shrink:0;"></div></div>
+          <div class="gr-sk-card gr-sk-row"><div class="gr-sk-b" style="width:86px;height:52px;border-radius:10px;flex-shrink:0;"></div><div style="flex:1;min-width:0;"><div class="gr-sk-b" style="height:13px;width:64%;border-radius:6px;margin-bottom:9px;"></div><div class="gr-sk-b" style="height:8px;width:100%;border-radius:999px;"></div></div><div class="gr-sk-b gr-sk-hide" style="width:74px;height:30px;border-radius:9px;flex-shrink:0;"></div></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ skIsSettings }}" hint-placeholder-val="{{ false }}">
+        <div class="gr-sk-b" style="width:140px;height:28px;border-radius:9px;margin-bottom:18px;"></div>
+        <div class="gr-sk-set">
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <div class="gr-sk-b" style="height:36px;"></div>
+            <div class="gr-sk-b" style="height:36px;"></div>
+            <div class="gr-sk-b" style="height:36px;"></div>
+            <div class="gr-sk-b gr-sk-hide" style="height:36px;"></div>
+            <div class="gr-sk-b gr-sk-hide" style="height:36px;"></div>
+          </div>
+          <div class="gr-sk-b" style="border-radius:16px;padding:0;min-height:340px;"></div>
+        </div>
+      </sc-if>
     </div>
   </div>
 </sc-if>

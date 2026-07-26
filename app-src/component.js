@@ -133,6 +133,8 @@ class Component extends DCLogic {
     canInstall:false,
     tagAdding:false,
     tagInput:'',
+    player:null,   // { url, title, meta } del vídeo en reproducción
+    libLoaded:false, // hasta que la biblioteca responde no se puede decir "vacía"
     stats:{ downloads:'0', storage:'0', storageSub:'', collections:'0', since:'—' },
     usage:{ label:'0 / 200 GB', pct:'0%', downloads:'0', downloadsSub:'', bandwidth:'—', renews:'—' },
     plan:'Free',
@@ -348,6 +350,8 @@ class Component extends DCLogic {
     }
     // Regreso desde el checkout de Wompi: ?wompi=1&id=<transactionId>
     const wompiId = params.get('wompi')==='1' ? params.get('id') : null;
+    // ?skeleton=1 congela el skeleton de arranque para poder revisarlo en vivo
+    if (params.get('skeleton') === '1') { this.setState({booting:true}); return; }
     // Vuelta del login con Google cuando algo falló (?oauth=<motivo>)
     const oauth = params.get('oauth');
     if (oauth){
@@ -359,9 +363,19 @@ class Component extends DCLogic {
     }
     const ok = await this.tryRefresh();
     if (ok){
-      this.setState({ authed:true, route:'download', booting:false });
-      this.applyHash(); // restaura la vista del hash YA, antes de cargar datos (sin flash de Descargar)
-      await this.loadAll();
+      // OJO: NO se quita `booting` aquí. Si se quita antes de cargar los datos,
+      // el skeleton de arranque desaparece, la vista se pinta vacía y entra un
+      // SEGUNDO skeleton (el de la biblioteca) → se veían dos seguidos.
+      // El skeleton de arranque se mantiene hasta que hay datos que mostrar.
+      this.setState({ authed:true, route:'download' });
+      this.applyHash(); // restaura la vista del hash YA (sin flash de Descargar)
+      try {
+        await this.loadAll();
+      } finally {
+        // pase lo que pase se sale del skeleton: si falla la carga, la vista
+        // mostrará su propio estado de error/vacío, pero nunca se queda colgada
+        this.setState({ booting:false });
+      }
       this.openStream();
       this.applyHash(); // reasegura por si el hash cambió durante la carga
       if (wompiId) await this.confirmWompiPayment(wompiId);
@@ -433,6 +447,7 @@ class Component extends DCLogic {
       this.api('/collections'),
     ]);
     this.setState({
+      libLoaded: true,
       videos: lib.items,
       trash: trash.items,
       collections: cols.collections.map(c=>({ id:c.id, name:c.name, color:c.color, days:c.days, count:c.count })),
@@ -1074,7 +1089,11 @@ class Component extends DCLogic {
       clearLibFilters:()=>this.setLib({filters:{platform:null,format:null,quality:null,date:null}}),
       sortOptions: [['recent','Recientes'],['title','Título'],['size','Tamaño']].map(([v,label])=>({label, pillBg:L.sort===v?'var(--accent)':'var(--surface)', pillColor:L.sort===v?'#0F0F0F':'var(--text-muted)', onClick:()=>this.setLib({sort:v})})),
       libIsAll:L.tab==='all', libIsFav:L.tab==='favorites', libIsCollections:L.tab==='collections', libIsTrash:L.tab==='trash',
-      cards, cardCount:cards.length, cardsEmpty:cards.length===0,
+      cards, cardCount:cards.length,
+      // "vacía" SOLO cuando ya respondió el servidor: antes salía el mensaje de
+      // biblioteca vacía y un instante después aparecían los vídeos
+      cardsEmpty: s.libLoaded && cards.length===0,
+      libLoading: showItems && !s.libLoaded,
       cols, collectionsEmpty:s.collections.length===0,
       trashItems:s.trash.map(t=>({...t, onRestore:()=>this.restoreItem(t.id)})), trashEmpty:s.trash.length===0,
       restoreItem:(id)=>this.restoreItem(id),
@@ -1089,6 +1108,12 @@ class Component extends DCLogic {
       moveSel:()=>this.moveToCollection(),
       redownloadSel:()=>this.redownloadSel(),
       detail:detailVM, detailOpen:!!detailVM, closeDetail:()=>this.setState({detailId:null, tagAdding:false, tagInput:''}),
+      // reproductor integrado
+      playerOpen: !!s.player, playerUrl: s.player?s.player.url:'', playerTitle: s.player?s.player.title:'',
+      playerMeta: s.player?s.player.meta:'',
+      playDetail:()=>{ if(detailVM) this.openPlayer(detailVM.id); },
+      closePlayer:()=>this.closePlayer(),
+      iconPlay: IC.play(),
       copyUrl:()=>{ if(detailVM){ navigator.clipboard && navigator.clipboard.writeText(detailVM.url); } this.toast('URL copiada'); },
       // Etiquetas: el botón "+ añadir" abre un input; "Añadir" (o Enter) guarda
       tagAdding: s.tagAdding, tagNotAdding: !s.tagAdding, tagInput: s.tagInput,
@@ -1156,6 +1181,126 @@ class Component extends DCLogic {
     this.api('/library/'+id, { method:'PATCH', body:{ isFavorite: !v.favorite } }).catch(()=>{
       this.setState(s=>({videos:s.videos.map(x=>x.id===id?{...x,favorite:v.favorite}:x)}));
     });
+  }
+
+  /**
+   * Abre el reproductor integrado. El <video> no puede mandar cabeceras, así
+   * que el token va en la URL (?token=) y se pide en modo inline para que el
+   * navegador lo reproduzca en vez de descargarlo. El servidor responde con
+   * Range, así que se puede saltar por el vídeo sin descargarlo entero.
+   */
+  openPlayer(id){
+    const v = this.state.videos.find(x=>x.id===id);
+    if(!v) return;
+    if(v.fileMissing){ this.toast('El archivo ya no está en el servidor'); return; }
+    const url = '/api/v1/library/'+id+'/file?inline=1&token='+encodeURIComponent(this._token||'');
+    this.setState({ player:{ url, title:v.title, meta:[v.platform, v.quality, v.size].filter(Boolean).join(' · ') } });
+    // los controles se cablean cuando el nodo ya existe en el DOM
+    setTimeout(()=>this._wirePlayer(), 40);
+  }
+  closePlayer(){
+    const el = document.querySelector('video[data-gr-player]');
+    if(el){ try{ el.pause(); }catch(e){} }
+    if(this._plOff){ this._plOff(); this._plOff = null; }
+    this.setState({ player:null });
+  }
+
+  /** mm:ss (o h:mm:ss si pasa de la hora) */
+  _plTime(s){
+    if(!isFinite(s) || s < 0) s = 0;
+    const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = Math.floor(s%60);
+    return h ? `${h}:${String(m).padStart(2,'0')}:${String(x).padStart(2,'0')}`
+             : `${m}:${String(x).padStart(2,'0')}`;
+  }
+
+  /**
+   * Cablea los controles propios del reproductor. Se trabaja sobre el DOM a
+   * propósito: meter el progreso en el estado re-renderizaría la app entera en
+   * cada `timeupdate` (decenas de veces por segundo).
+   */
+  _wirePlayer(){
+    const stage = document.querySelector('[data-pl-stage]');
+    const v = document.querySelector('video[data-gr-player]');
+    if(!stage || !v || stage._wired) return;
+    stage._wired = true;
+
+    const $ = (sel)=>stage.querySelector(sel);
+    const seek = $('[data-pl-seek]'), vol = $('[data-pl-vol]'), time = $('[data-pl-time]');
+    const bPlay = $('[data-pl-play]'), bMute = $('[data-pl-mute]'), bFull = $('[data-pl-full]'), tap = $('[data-pl-tap]');
+    const ICO = {
+      play:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.14v13.72a1 1 0 0 0 1.54.84l10.3-6.86a1 1 0 0 0 0-1.68L9.54 4.3A1 1 0 0 0 8 5.14Z"/></svg>',
+      pause:'<svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1.4"/><rect x="14" y="4.5" width="4" height="15" rx="1.4"/></svg>',
+      vol:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+      mute:'<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>',
+    };
+    // relleno rosa de las barras (funciona igual en Chrome y Firefox)
+    const paint = (el, pct)=>{ el.style.background =
+      `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, rgba(255,255,255,.26) ${pct}%, rgba(255,255,255,.26) 100%)`; };
+
+    const syncPlay = ()=>{
+      bPlay.innerHTML = v.paused ? ICO.play : ICO.pause;
+      stage.setAttribute('data-paused', v.paused ? '1' : '0');
+    };
+    const syncVol = ()=>{
+      const muted = v.muted || v.volume === 0;
+      bMute.innerHTML = muted ? ICO.mute : ICO.vol;
+      const pct = muted ? 0 : Math.round(v.volume*100);
+      vol.value = pct; paint(vol, pct);
+    };
+    const syncTime = ()=>{
+      const d = isFinite(v.duration) ? v.duration : 0;
+      if(!seek._dragging){
+        const pct = d ? (v.currentTime/d)*100 : 0;
+        seek.value = Math.round(pct*10); paint(seek, pct);
+      }
+      time.textContent = `${this._plTime(v.currentTime)} / ${this._plTime(d)}`;
+    };
+
+    // ocultar los controles tras 2.4s sin ratón (solo mientras reproduce)
+    let idleT;
+    const wake = ()=>{
+      stage.setAttribute('data-idle','0');
+      clearTimeout(idleT);
+      idleT = setTimeout(()=>{ if(!v.paused) stage.setAttribute('data-idle','1'); }, 2400);
+    };
+
+    const toggle = ()=>{ if(v.paused) v.play().catch(()=>{}); else v.pause(); };
+    const onKey = (e)=>{
+      if(e.key===' '||e.key==='k'){ e.preventDefault(); toggle(); }
+      else if(e.key==='ArrowRight') v.currentTime = Math.min(v.duration||0, v.currentTime+5);
+      else if(e.key==='ArrowLeft') v.currentTime = Math.max(0, v.currentTime-5);
+      else if(e.key==='ArrowUp'){ e.preventDefault(); v.muted=false; v.volume=Math.min(1,v.volume+.1); }
+      else if(e.key==='ArrowDown'){ e.preventDefault(); v.volume=Math.max(0,v.volume-.1); }
+      else if(e.key==='m'){ v.muted=!v.muted; }
+      else if(e.key==='f'){ bFull.click(); }
+      else return;
+      wake();
+    };
+
+    const onSeekIn = ()=>{ const d=isFinite(v.duration)?v.duration:0; v.currentTime=(seek.value/1000)*d; paint(seek, seek.value/10); };
+    const onVolIn = ()=>{ v.muted=false; v.volume=vol.value/100; syncVol(); };
+    const onFull = ()=>{ const el=stage; if(document.fullscreenElement) document.exitFullscreen();
+      else if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+      else if(v.webkitEnterFullscreen) v.webkitEnterFullscreen(); };
+
+    bPlay.addEventListener('click', toggle);
+    tap.addEventListener('click', toggle);
+    bMute.addEventListener('click', ()=>{ v.muted=!v.muted; syncVol(); });
+    bFull.addEventListener('click', onFull);
+    seek.addEventListener('input', onSeekIn);
+    seek.addEventListener('pointerdown', ()=>{ seek._dragging=true; });
+    seek.addEventListener('pointerup', ()=>{ seek._dragging=false; });
+    vol.addEventListener('input', onVolIn);
+    v.addEventListener('play', ()=>{ syncPlay(); wake(); });
+    v.addEventListener('pause', ()=>{ syncPlay(); stage.setAttribute('data-idle','0'); });
+    v.addEventListener('timeupdate', syncTime);
+    v.addEventListener('loadedmetadata', syncTime);
+    v.addEventListener('volumechange', syncVol);
+    stage.addEventListener('pointermove', wake);
+    window.addEventListener('keydown', onKey);
+
+    syncPlay(); syncVol(); syncTime(); wake();
+    this._plOff = ()=>{ window.removeEventListener('keydown', onKey); clearTimeout(idleT); stage._wired=false; };
   }
 
   /** Añade la etiqueta escrita al video abierto en el detalle (PATCH /library/:id). */
@@ -1884,6 +2029,18 @@ class Component extends DCLogic {
       // OJO: el binding {{ q.global }} del input de la barra NO resolvía porque
       // renderVals no devolvía `q` → la caja se pintaba siempre vacía.
       q: s.q,
+      // Skeleton por vista: durante el arranque la ruta aún no está en el
+      // estado, así que se deduce del hash para pintar la forma correcta.
+      ...(() => {
+        const h = (location.hash||'').replace(/^#\/?/,'').split('/')[0];
+        const k = s.booting ? (h||'descargar') : s.route;
+        return {
+          skIsQueue:   k==='cola'   || k==='queue',
+          skIsLibrary: k==='biblioteca' || k==='library',
+          skIsSettings:k==='ajustes'|| k==='settings',
+          skIsDownload: !(k==='cola'||k==='queue'||k==='biblioteca'||k==='library'||k==='ajustes'||k==='settings'),
+        };
+      })(),
       searchWidth: s.searchExpanded?'260px':'150px',
       // en móvil el input está oculto hasta que se toca la lupa: esta clase lo
       // despliega y hace sitio escondiendo los otros iconos de la barra
