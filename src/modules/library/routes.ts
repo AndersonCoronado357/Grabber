@@ -61,6 +61,15 @@ function decodeCursor(raw: string): Cursor {
 }
 
 export async function libraryRoutes(app: FastifyInstance): Promise<void> {
+  // El <video> del reproductor no puede enviar cabeceras: se admite el token
+  // por query (mismo patrón que el stream SSE). onRequest corre ANTES de
+  // requireAuth, así que la autenticación normal sigue intacta.
+  app.addHook('onRequest', async (req) => {
+    const q = req.query as { token?: string } | undefined;
+    if (q?.token && !req.headers.authorization) {
+      req.headers.authorization = `Bearer ${q.token}`;
+    }
+  });
   app.addHook('preHandler', requireAuth);
 
   // —— listado con filtros y paginación por cursor (nunca OFFSET) ——
@@ -328,8 +337,14 @@ export async function libraryRoutes(app: FastifyInstance): Promise<void> {
     const stat = statSync(abs);
     const range = req.headers.range;
     const fileName = path.basename(abs);
+    // ?inline=1 → el navegador lo REPRODUCE en vez de descargarlo (reproductor
+    // integrado). Sin el parámetro se mantiene la descarga de siempre.
+    const inline = (req.query as { inline?: string } | undefined)?.inline === '1';
     reply.header('Accept-Ranges', 'bytes');
-    reply.header('Content-Disposition', `attachment; filename="${fileName}"`);
+    reply.header(
+      'Content-Disposition',
+      `${inline ? 'inline' : 'attachment'}; filename="${fileName}"`,
+    );
     reply.header('Content-Type', guessMime(fileName));
 
     if (range) {
