@@ -1062,7 +1062,9 @@ class Component extends DCLogic {
       favColor: detail.favorite?'var(--accent)':'var(--text-muted)',
       onFav:()=>this.toggleFav(detail.id),
       history:[{q:detail.format, when:detail.dateLabel}],
-      fileUrl: '/api/v1/library/'+detail.id+'/file',
+      // el token va en la URL: un <a href> no puede mandar cabeceras y el
+      // servidor devolvía 401 en JSON, que el navegador guardaba como archivo
+      fileUrl: '/api/v1/library/'+detail.id+'/file?token='+encodeURIComponent(this._token||''),
     } : null;
 
     const showItems = L.tab==='all'||L.tab==='favorites';
